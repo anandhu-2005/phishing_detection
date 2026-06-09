@@ -321,4 +321,55 @@ function renderDashboardResults(data) {
   ...
 }
 ```
+
+------------------------------------------------------------------------
+7. NEW — REPORT FEEDBACK ENDPOINT (detector/views.py)
+------------------------------------------------------------------------
+The frontend now has a "Report Verdict" system that lets users flag:
+  - FALSE POSITIVE  : URL was safe but marked as phishing
+  - MISSED THREAT   : URL was phishing but marked as legitimate
+  - CORRECT         : Verdict was confirmed accurate
+
+The frontend currently console.logs the payload. Wire this to a Django
+endpoint by adding to views.py:
+
+```python
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def report_feedback(request):
+    """
+    POST Endpoint to receive user verdict correction reports.
+    Expected JSON body: { url, reportType, notes, timestamp, features }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=400)
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    url         = payload.get('url', '')
+    report_type = payload.get('reportType', '')  # false_positive | missed_threat | correct
+    notes       = payload.get('notes', '')
+    features    = payload.get('features', {})
+    timestamp   = payload.get('timestamp', '')
+
+    # Persist to database or log file for future model retraining
+    # Example: FeedbackReport.objects.create(...)
+    print(f"[FEEDBACK] type={report_type} url={url} notes={notes}")
+
+    return JsonResponse({'status': 'received'})
+```
+
+Add to detector/urls.py:
+```python
+path('api/report-feedback/', views.report_feedback, name='report_feedback'),
+```
+
+In index.html, in the reportModalSubmit event handler, the console.info
+call can be replaced with a fetch() POST to '/api/report-feedback/'
+with the payload JSON as the body. Use 'Content-Type: application/json'.
 ========================================================================
