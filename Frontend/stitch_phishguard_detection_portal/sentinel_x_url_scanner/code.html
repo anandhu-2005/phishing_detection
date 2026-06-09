@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL-X | URL Scanner Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        .scanning-grid {
+            background-image: 
+                linear-gradient(to right, rgba(51, 65, 85, 0.2) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(51, 65, 85, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(77, 142, 255, 0.3);
+        }
+        @keyframes scan-line {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+        .scan-anim {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #adc6ff, transparent);
+            animation: scan-line 4s linear infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "outline-variant": "#424754",
+                "on-primary-fixed-variant": "#004395",
+                "surface-container-highest": "#2d3449",
+                "surface-variant": "#2d3449",
+                "inverse-on-surface": "#283044",
+                "surface-container": "#171f33",
+                "error-container": "#93000a",
+                "surface": "#0b1326",
+                "primary-container": "#4d8eff",
+                "inverse-surface": "#dae2fd",
+                "on-primary": "#002e6a",
+                "on-error": "#690005",
+                "warning-amber": "#F59E0B",
+                "tertiary-container": "#ff5451",
+                "background": "#0b1326",
+                "secondary-fixed-dim": "#4edea3",
+                "surface-container-high": "#222a3d",
+                "on-tertiary-container": "#5c0008",
+                "surface-bright": "#31394d",
+                "on-secondary-fixed": "#002113",
+                "surface-container-low": "#131b2e",
+                "secondary": "#4edea3",
+                "on-surface": "#dae2fd",
+                "primary": "#adc6ff",
+                "data-blue": "#60A5FA",
+                "on-tertiary": "#68000a",
+                "on-tertiary-fixed": "#410004",
+                "on-tertiary-fixed-variant": "#930013",
+                "on-primary-fixed": "#001a42",
+                "tertiary-fixed": "#ffdad7",
+                "error": "#ffb4ab",
+                "surface-card": "#1E293B",
+                "tertiary": "#ffb3ad",
+                "surface-dim": "#0b1326",
+                "inverse-primary": "#005ac2",
+                "on-surface-variant": "#c2c6d6",
+                "surface-container-lowest": "#060e20",
+                "on-error-container": "#ffdad6",
+                "on-secondary-container": "#00311f",
+                "surface-tint": "#adc6ff",
+                "secondary-container": "#00a572",
+                "border-glow": "#334155",
+                "outline": "#8c909f",
+                "tertiary-fixed-dim": "#ffb3ad",
+                "secondary-fixed": "#6ffbbe",
+                "primary-fixed": "#d8e2ff",
+                "on-secondary": "#003824",
+                "on-background": "#dae2fd",
+                "on-primary-container": "#00285d",
+                "primary-fixed-dim": "#adc6ff",
+                "on-secondary-fixed-variant": "#005236"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              },
+              "spacing": {
+                "stack-sm": "8px",
+                "margin-edge": "32px",
+                "container-max": "1200px",
+                "gutter": "24px",
+                "stack-lg": "32px",
+                "stack-md": "16px"
+              },
+              "fontFamily": {
+                "headline-md": ["Inter"],
+                "data-code": ["JetBrains Mono"],
+                "display-lg": ["Inter"],
+                "label-caps": ["JetBrains Mono"],
+                "body-base": ["Inter"],
+                "stats-number": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                "data-code": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-base min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-edge h-16 sticky top-0 z-50 bg-surface-container-low dark:bg-surface-container-lowest border-b border-outline-variant">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-headline-md tracking-tighter text-primary">SENTINEL-X</span>
+<nav class="hidden md:flex gap-6">
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1" href="#">Dashboard</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors" href="#">Documentation</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors" href="#">API</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors" href="#">Threat Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-on-primary px-4 py-2 font-label-caps text-label-caps rounded-lg active:scale-95 transition-transform">Scan URL</button>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">notifications_active</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">account_circle</span>
+</div>
+</header>
+<div class="flex">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col h-[calc(100vh-64px)] fixed left-0 top-16 w-64 pt-8 pb-8 px-4 bg-surface-container dark:bg-surface-container-high border-r border-outline-variant z-40">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">security</span>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-secondary">ANALYST-01</p>
+<p class="text-[10px] text-secondary/80 uppercase tracking-widest">System Status: Optimal</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-caps text-label-caps">Command Center</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-caps text-label-caps">Heuristic Analysis</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="lan">lan</span>
+<span class="font-label-caps text-label-caps">Network Logs</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="policy">policy</span>
+<span class="font-label-caps text-label-caps">Security Policy</span>
+</a>
+<div class="mt-8 mb-4 px-3">
+<p class="font-label-caps text-[10px] text-outline uppercase tracking-tighter">Model Specs</p>
+<p class="font-data-code text-[11px] text-secondary mt-1">RF-Classifier-v1.0</p>
+</div>
+</nav>
+<div class="border-t border-outline-variant pt-6 flex flex-col gap-2">
+<button class="w-full bg-error-container text-on-error-container py-3 rounded-lg font-label-caps text-label-caps flex items-center justify-center gap-2 mb-4">
+<span class="material-symbols-outlined text-sm">lock</span> Emergency Lock
+                </button>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 lg:ml-64 relative min-h-[calc(100vh-64px)]">
+<!-- Background effects -->
+<div class="absolute inset-0 scanning-grid opacity-30 pointer-events-none"></div>
+<div class="absolute inset-0 scan-anim opacity-20 pointer-events-none"></div>
+<div class="relative z-10 p-margin-edge max-w-5xl mx-auto w-full">
+<!-- Hero Scanner Section -->
+<section class="mt-12 text-center">
+<h1 class="font-display-lg text-headline-md text-on-surface mb-2">Autonomous Threat Detection</h1>
+<p class="text-on-surface-variant mb-12 max-w-2xl mx-auto">Analyze suspicious URLs using our real-time Random Forest classifier. We extract 12 critical features to identify phishing attempts before they reach your network.</p>
+<div class="glass-panel p-6 rounded-xl shadow-2xl relative overflow-hidden group">
+<div class="flex flex-col md:flex-row gap-4">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary">link</span>
+<input class="w-full bg-surface-container-lowest border border-border-glow rounded-lg py-5 pl-12 pr-4 font-data-code text-primary focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-outline/50" placeholder="https://secure-login-portal.net/verify..." type="text"/>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-caps text-headline-md px-8 py-5 rounded-lg glow-hover transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">bolt</span>
+                                Analyze URL
+                            </button>
+</div>
+</div>
+</section>
+<!-- Status Cards Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+<!-- Feature Extraction Breakdown -->
+<div class="md:col-span-2 glass-panel p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-label-caps text-label-caps text-on-surface">Feature Matrix</h2>
+<span class="font-data-code text-[11px] text-secondary">Awaiting Input...</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">URL LENGTH</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">AT SYMBOL</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">SUBDOMAINS</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">SSL CERT</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">REDIRECTS</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-label-caps text-[10px] text-outline">DNS RECORD</span>
+<span class="font-data-code text-on-surface">-</span>
+</div>
+</div>
+</div>
+<!-- ML Logic Card -->
+<div class="glass-panel p-6 rounded-xl border-l-4 border-secondary">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary">memory</span>
+<h2 class="font-label-caps text-label-caps text-on-surface">Model Health</h2>
+</div>
+<div class="space-y-4">
+<div>
+<p class="text-[10px] font-label-caps text-outline mb-1">ACCURACY</p>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[98.4%]"></div>
+</div>
+<p class="text-right font-data-code text-secondary text-[11px] mt-1">98.4%</p>
+</div>
+<div>
+<p class="text-[10px] font-label-caps text-outline mb-1">LATENCY</p>
+<p class="font-data-code text-on-surface">12ms <span class="text-secondary text-[10px]">OPTIMAL</span></p>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<img class="w-full h-24 object-cover rounded-lg opacity-60" data-alt="A highly detailed close-up of a futuristic glowing computer circuit board with neon blue light trails flowing through crystalline structures. The lighting is low and cinematic, emphasizing deep shadows and vibrant cyan accents. The style is hyper-realistic and technical, representing high-speed data processing and advanced cybersecurity encryption in a professional dark-mode dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_cnOU_zdOMxeq7j3zf7r0SNET_EuGve3CbNAkHjOg-55TTAid8zCO_eekDb74L9Q9EjENIe8DyQglNBEDhSVh7jXzFFEqXHnXSc3V7QF4t1JIvsQzjJuKGumBWnW2YFiTwXEZXG8rRRt6rG81tHZsZKZJKVb5MQ5WhI06VSG8hNX70gHEwmE5_3JdcNH6FBG1laNZqkE1wRL3JYIf4-_LNCPS2z1zy2DLHiIfsSd9CK8GnMz3Egb292OVWUMsZ8SekcvRSQAPQdE"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Scans List -->
+<section class="mt-16">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Intelligence Logs</h2>
+<button class="text-primary font-label-caps text-label-caps hover:underline">View All Logs</button>
+</div>
+<div class="space-y-3">
+<!-- Log Item 1 (Safe) -->
+<div class="glass-panel p-4 rounded-lg flex items-center justify-between hover:bg-surface-container-highest/50 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border border-secondary flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div>
+<p class="font-data-code text-sm text-on-surface truncate max-w-xs md:max-w-md">https://github.com/sentinel-x/core-engine</p>
+<p class="text-[10px] font-label-caps text-outline">TIMESTAMP: 2024.05.24 14:22:01</p>
+</div>
+</div>
+<div class="text-right">
+<span class="bg-secondary/10 text-secondary border border-secondary/30 px-3 py-1 rounded-full font-label-caps text-[10px]">LEGITIMATE</span>
+</div>
+</div>
+<!-- Log Item 2 (Phishing) -->
+<div class="glass-panel p-4 rounded-lg flex items-center justify-between hover:bg-surface-container-highest/50 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border border-error flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-sm">warning</span>
+</div>
+<div>
+<p class="font-data-code text-sm text-on-surface truncate max-w-xs md:max-w-md">http://paypa1-security-verification.com/login</p>
+<p class="text-[10px] font-label-caps text-outline">TIMESTAMP: 2024.05.24 13:05:48</p>
+</div>
+</div>
+<div class="text-right">
+<span class="bg-error/10 text-error border border-error/30 px-3 py-1 rounded-full font-label-caps text-[10px]">PHISHING</span>
+</div>
+</div>
+<!-- Log Item 3 (Safe) -->
+<div class="glass-panel p-4 rounded-lg flex items-center justify-between hover:bg-surface-container-highest/50 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border border-secondary flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div>
+<p class="font-data-code text-sm text-on-surface truncate max-w-xs md:max-w-md">https://aws.amazon.com/console/home</p>
+<p class="text-[10px] font-label-caps text-outline">TIMESTAMP: 2024.05.24 12:44:12</p>
+</div>
+</div>
+<div class="text-right">
+<span class="bg-secondary/10 text-secondary border border-secondary/30 px-3 py-1 rounded-full font-label-caps text-[10px]">LEGITIMATE</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="w-full py-stack-md px-margin-edge flex flex-col md:flex-row justify-between items-center mt-stack-lg bg-surface-container-lowest border-t border-outline-variant">
+<span class="text-label-caps font-bold text-outline">SENTINEL-X</span>
+<p class="font-label-caps text-[10px] text-outline text-center my-4 md:my-0">© 2024 SENTINEL-X CYBERSECURITY. ENCRYPTED CONNECTION ESTABLISHED.</p>
+<div class="flex gap-6">
+<a class="font-label-caps text-[10px] text-outline hover:text-on-surface hover:underline transition-all opacity-80 hover:opacity-100" href="#">Privacy Protocol</a>
+<a class="font-label-caps text-[10px] text-outline hover:text-on-surface hover:underline transition-all opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+</div>
+</footer>
+</main>
+</div>
+<!-- Micro-interaction script -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+
+        // Simple input focus interaction
+        const urlInput = document.querySelector('input[type="text"]');
+        const scannerPanel = urlInput.closest('.glass-panel');
+        
+        urlInput.addEventListener('focus', () => {
+            scannerPanel.style.boxShadow = '0 0 40px rgba(77, 142, 255, 0.15)';
+            scannerPanel.style.borderColor = '#4d8eff';
+        });
+        
+        urlInput.addEventListener('blur', () => {
+            scannerPanel.style.boxShadow = '';
+            scannerPanel.style.borderColor = '#334155';
+        });
+    </script>
+</body></html>

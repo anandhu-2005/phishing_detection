@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL-X | Threat Analysis Result</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#424754",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-container-highest": "#2d3449",
+                        "surface-variant": "#2d3449",
+                        "inverse-on-surface": "#283044",
+                        "surface-container": "#171f33",
+                        "error-container": "#93000a",
+                        "surface": "#0b1326",
+                        "primary-container": "#4d8eff",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary": "#002e6a",
+                        "on-error": "#690005",
+                        "warning-amber": "#F59E0B",
+                        "tertiary-container": "#ff5451",
+                        "background": "#0b1326",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-container-high": "#222a3d",
+                        "on-tertiary-container": "#5c0008",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed": "#002113",
+                        "surface-container-low": "#131b2e",
+                        "secondary": "#4edea3",
+                        "on-surface": "#dae2fd",
+                        "primary": "#adc6ff",
+                        "data-blue": "#60A5FA",
+                        "on-tertiary": "#68000a",
+                        "on-tertiary-fixed": "#410004",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-fixed": "#ffdad7",
+                        "error": "#ffb4ab",
+                        "surface-card": "#1E293B",
+                        "tertiary": "#ffb3ad",
+                        "surface-dim": "#0b1326",
+                        "inverse-primary": "#005ac2",
+                        "on-surface-variant": "#c2c6d6",
+                        "surface-container-lowest": "#060e20",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#00311f",
+                        "surface-tint": "#adc6ff",
+                        "secondary-container": "#00a572",
+                        "border-glow": "#334155",
+                        "outline": "#8c909f",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "secondary-fixed": "#6ffbbe",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary": "#003824",
+                        "on-background": "#dae2fd",
+                        "on-primary-container": "#00285d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary-fixed-variant": "#005236"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "margin-edge": "32px",
+                        "container-max": "1200px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "data-code": ["JetBrains Mono"],
+                        "display-lg": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-base": ["Inter"],
+                        "stats-number": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "data-code": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                        "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "stats-number": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #334155;
+        }
+        .glow-red {
+            box-shadow: 0 0 20px rgba(255, 84, 81, 0.3);
+            border-color: #ff5451;
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(78, 222, 163, 0.3);
+            border-color: #4edea3;
+        }
+        .scanning-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #adc6ff, transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-10px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(400px); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-base selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center w-full px-margin-edge h-16 sticky top-0 z-50 bg-surface-container-low dark:bg-surface-container-lowest border-b border-outline-variant">
+<div class="font-display-lg text-headline-md tracking-tighter text-primary">SENTINEL-X</div>
+<div class="hidden md:flex gap-gutter">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">Documentation</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">API</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1" href="#">Threat Logs</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-on-primary px-4 py-2 font-label-caps text-label-caps rounded-lg active:scale-95 transition-transform">Scan URL</button>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="notifications_active">notifications_active</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</nav>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden lg:flex flex-col h-screen fixed left-0 top-0 pt-20 pb-8 px-4 bg-surface-container dark:bg-surface-container-high border-r border-outline-variant w-64 z-40">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="Security Analyst Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZU9DQHuUU8NiZiyNp-3hl9UHwM_UgAIRJLApc1J9lK_h14E8HVucgvCOcN07GBm2eAVDZYr7Khaf7SKnzqhedub7XDClljL_rqnogDmJzeWetrlsn0ypq3yp8X9k0MzNUPJm9jbKchFIRbDJXzsP3zjtdPq1tJK2pW1LkkW86OPzwqeumlgQgoB-unD_ce0Mpocq6ZQzu8hD1mDkWGbTJrk-3K1UgEOuWoUv0K60PThs-l1flAxs6ubntKLg2-vibPAsGqbnlFi0"/>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-secondary">ANALYST-01</p>
+<p class="text-[10px] text-secondary/70">System Status: Secure</p>
+</div>
+</div>
+<div class="space-y-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-caps text-label-caps">Command Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container font-bold rounded-lg translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-caps text-label-caps">Heuristic Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="lan">lan</span>
+<span class="font-label-caps text-label-caps">Network Logs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:border-l-4 hover:border-secondary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="policy">policy</span>
+<span class="font-label-caps text-label-caps">Security Policy</span>
+</a>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<button class="w-full py-2 bg-error-container text-on-error-container font-label-caps text-label-caps rounded hover:brightness-110 transition-all mb-4">
+                Emergency Lock
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:underline" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 min-h-screen p-margin-edge pb-24">
+<!-- Result Header Section -->
+<section class="max-w-container-max mx-auto mb-stack-lg">
+<div class="glass-panel glow-red p-stack-lg rounded-xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full scanning-line opacity-20"></div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-gutter">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-tertiary-container text-4xl" data-icon="report" style="font-variation-settings: 'FILL' 1;">report</span>
+<h1 class="font-headline-md text-headline-md text-tertiary-container uppercase tracking-widest">Scan Result: PHISHING DETECTED</h1>
+</div>
+<p class="font-data-code text-data-code text-on-surface-variant">TARGET URL: <span class="text-error">https://secure-login-update-auth-391.net/verify/account</span></p>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-outline mb-1">CONFIDENCE SCORE</p>
+<p class="font-stats-number text-stats-number text-tertiary-container">98.4%</p>
+</div>
+<div class="w-24 h-24 relative">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="16" stroke-width="3"></circle>
+<circle class="stroke-tertiary-container" cx="18" cy="18" fill="none" r="16" stroke-dasharray="98.4, 100" stroke-linecap="round" stroke-width="3"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="security_update_warning">security_update_warning</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recommendation Banner -->
+<div class="mt-stack-md p-4 bg-error-container/20 border border-error-container/40 rounded flex items-start gap-4">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<div>
+<p class="font-bold text-on-error-container">Critical Security Warning</p>
+<p class="text-on-surface-variant text-sm">Our heuristic engine identified this domain as a high-risk phishing vector. Do not click links, download attachments, or provide any personal credentials on this page.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Bento Grid -->
+<section class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- URL Breakdown Matrix (8 cols) -->
+<div class="md:col-span-8 space-y-gutter">
+<div class="glass-panel p-stack-lg rounded-xl">
+<h2 class="font-label-caps text-label-caps text-primary mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="list_alt">list_alt</span>
+                        Feature Extraction Breakdown
+                    </h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Feature Row 1 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">URL LENGTH</span>
+<span class="font-data-code text-data-code text-error">154 chars (Extreme)</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">HAS IP ADDRESS</span>
+<span class="font-data-code text-data-code text-secondary">False</span>
+</div>
+<!-- Feature Row 2 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">SPECIAL CHAR COUNT</span>
+<span class="font-data-code text-data-code text-error">12 (Suspicious)</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">SUBDOMAINS</span>
+<span class="font-data-code text-data-code text-error">4 Detected</span>
+</div>
+<!-- Feature Row 3 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">HTTPS PROTOCOL</span>
+<span class="font-data-code text-data-code text-secondary">Valid (SSL/TLS)</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">PREFIX / SUFFIX</span>
+<span class="font-data-code text-data-code text-error">Hyphen '-' Detected</span>
+</div>
+<!-- Feature Row 4 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">DOMAIN AGE</span>
+<span class="font-data-code text-data-code text-error">3 Days (New)</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">@ SYMBOL</span>
+<span class="font-data-code text-data-code text-secondary">Not Present</span>
+</div>
+<!-- Feature Row 5 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">REDIRECT COUNT</span>
+<span class="font-data-code text-data-code text-error">3 (Abnormal)</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">TIGHT ENTROPY</span>
+<span class="font-data-code text-data-code text-error">4.2 (High)</span>
+</div>
+<!-- Feature Row 6 -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">FAVICON DOMAIN</span>
+<span class="font-data-code text-data-code text-error">Mismatch Found</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant/30 rounded">
+<span class="font-label-caps text-[10px] text-outline">WHOIS DATA</span>
+<span class="font-data-code text-data-code text-outline">Redacted/Private</span>
+</div>
+</div>
+</div>
+<!-- Deep Analysis Explanation -->
+<div class="glass-panel p-stack-lg rounded-xl">
+<h2 class="font-label-caps text-label-caps text-secondary mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="psychology">psychology</span>
+                        Neural Inference Engine Logic
+                    </h2>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                        The SENTINEL-X engine utilized a Random Forest Classifier trained on 500,000+ malicious domains. Primary threat vectors detected include <strong>Homograph Spoofing</strong> and <strong>URL Shortening Obfuscation</strong>. The structural entropy of the URL path suggests an attempt to mimic a standard financial verification endpoint.
+                    </p>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 px-4 py-2 border border-border-glow text-data-blue font-label-caps text-[10px] rounded hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined text-xs" data-icon="description">description</span>
+                            Download Full JSON Log
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-border-glow text-data-blue font-label-caps text-[10px] rounded hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined text-xs" data-icon="share">share</span>
+                            Report to Global Threat Index
+                        </button>
+</div>
+</div>
+</div>
+<!-- Sidebar Details (4 cols) -->
+<div class="md:col-span-4 space-y-gutter">
+<!-- Visual Map/Context Placeholder -->
+<div class="glass-panel rounded-xl overflow-hidden h-48 relative">
+<img class="w-full h-full object-cover opacity-40" data-alt="A futuristic dark server room with glowing blue and red diagnostic data overlays showing network packets moving through a digital grid. High-tech cybersecurity aesthetic with deep navy shadows and sharp neon accents, emphasizing advanced threat detection and server infrastructure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqiZsZafXPoDQQj66TOI8y4sD14ab2C-_v4IEjKIJT6cwdm9z1KVHEmIJ2lLxf7REd9cKP20K6RHYwMaUldh_5PSNIRR4lexM5SWx9U2GhqcpgwOAC2EFHepPcQdctF3CEmdIR52lElOvWwNjqvnOHHXXMznm0PKf6tVoEe9MDdGbd0xvQyj68-N9m8zQvkQuh3cnZLcl6kE2fogBqQPzFx2c6BzSNNErXEGE3fPzRrM9cHvtGw0t8Oc16NzPtduXFqgVfdA3bX28"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="font-label-caps text-[10px] text-primary">SERVER ORIGIN</p>
+<p class="font-headline-md text-sm">Reykjavik, Iceland</p>
+</div>
+</div>
+<!-- Domain Info Card -->
+<div class="glass-panel p-stack-md rounded-xl">
+<p class="font-label-caps text-label-caps text-outline mb-4">Domain Reputation</p>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="p-2 bg-error-container/20 rounded">
+<span class="material-symbols-outlined text-error" data-icon="block">block</span>
+</div>
+<div>
+<p class="text-sm font-bold">Blacklisted</p>
+<p class="text-[10px] text-on-surface-variant">Flagged by Google Safe Browsing</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="p-2 bg-warning-amber/20 rounded">
+<span class="material-symbols-outlined text-warning-amber" data-icon="history">history</span>
+</div>
+<div>
+<p class="text-sm font-bold">Recent Registration</p>
+<p class="text-[10px] text-on-surface-variant">Domain registered &lt; 72 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="flex flex-col gap-3">
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+                        SCAN ANOTHER URL
+                    </button>
+<button class="w-full py-4 border border-border-glow text-on-surface font-bold rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+                        BLOCK DOMAIN GLOBALLY
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-md px-margin-edge flex flex-col md:flex-row justify-between items-center bg-surface-container-lowest border-t border-outline-variant">
+<div class="text-label-caps font-bold text-outline mb-4 md:mb-0">© 2024 SENTINEL-X CYBERSECURITY. ENCRYPTED CONNECTION ESTABLISHED.</div>
+<div class="flex gap-6">
+<a class="font-label-caps text-label-caps text-outline hover:text-on-surface hover:underline opacity-80 hover:opacity-100 transition-all" href="#">Privacy Protocol</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-on-surface hover:underline opacity-80 hover:opacity-100 transition-all" href="#">Terms of Service</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-on-surface hover:underline opacity-80 hover:opacity-100 transition-all" href="#">Security Disclosure</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-on-surface hover:underline opacity-80 hover:opacity-100 transition-all" href="#">Whitepaper</a>
+</div>
+</footer>
+<script>
+        // Micro-interaction for result card hover
+        const card = document.querySelector('.glow-red');
+        if (card) {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        }
+    </script>
+</body></html>
