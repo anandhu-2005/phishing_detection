@@ -18,7 +18,7 @@ WHITELIST = [
 
     # International domains
     'bbc.co.uk', 'reuters.com', 'theguardian.com', 'nytimes.com',
-    'gov.uk', 'gov.in', 'nic.in', 'amazon.co.uk', 'google.co.uk',
+    'gov.uk', 'gov.in', 'nic.in', 'google.co.uk','amazon.co.uk'
 ]
 
 def is_whitelisted(url: str) -> bool:

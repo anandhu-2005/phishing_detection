@@ -1,7 +1,8 @@
 venv/
+env/
 __pycache__/
 *.pyc
 db.sqlite3
 .env
 detector/model/phishing_model.pkl
-malicious_phish.csv
+*.csv
