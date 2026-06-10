@@ -17,24 +17,15 @@ WHITELIST = [
 ]
 
 def is_whitelisted(url: str) -> bool:
-    # Ensure scheme is present for tldextract to parse the domain correctly
-    normalized_url = url
-    if "://" not in url:
-        normalized_url = f"http://{url}"
-    ext = tldextract.extract(normalized_url)
+    ext = tldextract.extract(url)
     domain = f"{ext.domain}.{ext.suffix}"
     return domain in WHITELIST
 
 
 # ── Core 12 features for the ML model ────────────────────────────────────
 def extract_features(url: str) -> list:
-    # Normalize URL by ensuring a scheme is present so urlparse extracts netloc/path correctly
-    normalized_url = url
-    if "://" not in url:
-        normalized_url = f"http://{url}"
-        
-    parsed = urlparse(normalized_url)
-    ext = tldextract.extract(normalized_url)
+    parsed = urlparse(url)
+    ext = tldextract.extract(url)
 
     features = [
         len(url),                                                                # url_length
@@ -46,7 +37,7 @@ def extract_features(url: str) -> list:
         len(ext.domain),                                                         # domain_length
         len(parsed.path),                                                        # path_length
         1 if '-' in ext.domain else 0,                                          # hyphen_in_domain
-        sum(c.isdigit() for c in url) / len(url) if len(url) > 0 else 0,        # digit_ratio
+        sum(c.isdigit() for c in url) / len(url),                               # digit_ratio
         sum(url.count(c) for c in ['%', '=', '?', '&']),                       # special_char_count
         1 if any(t in parsed.path for t in ['.com', '.net', '.org']) else 0,   # tld_in_path
     ]
@@ -57,8 +48,6 @@ def extract_features(url: str) -> list:
 def calc_entropy(url: str) -> float:
     counts = Counter(url)
     length = len(url)
-    if length == 0:
-        return 0.0
     entropy = -sum((c / length) * math.log2(c / length) for c in counts.values())
     return round(entropy, 2)
 
@@ -126,11 +115,8 @@ def get_server_country(domain: str) -> str:
 
 # ── Full info for UI display ──────────────────────────────────────────────
 def extract_full_info(url: str) -> dict:
-    normalized_url = url
-    if "://" not in url:
-        normalized_url = f"http://{url}"
-    parsed = urlparse(normalized_url)
-    ext = tldextract.extract(normalized_url)
+    parsed = urlparse(url)
+    ext = tldextract.extract(url)
     domain = f"{ext.domain}.{ext.suffix}"
 
     features = extract_features(url)
@@ -156,3 +142,27 @@ def extract_full_info(url: str) -> dict:
     }
 
     return info
+
+
+# ── Test ──────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    test_urls = [
+        "http://192.168.1.1/login",
+        "https://www.google.com",
+        "https://wikipedia.org",
+        "http://paypal-secure-login.com/verify?user=1&token=abc",
+        "http://google.com@evil.com/paypal.com/login",
+    ]
+
+    feature_names = [
+        'url_length', 'has_ip', 'has_at_symbol', 'has_double_slash',
+        'subdomain_count', 'has_https', 'domain_length', 'path_length',
+        'hyphen_in_domain', 'digit_ratio', 'special_char_count', 'tld_in_path'
+    ]
+
+    for url in test_urls:
+        print(f"\nURL: {url}")
+        print(f"  Whitelisted: {is_whitelisted(url)}")
+        features = extract_features(url)
+        for name, value in zip(feature_names, features):
+            print(f"  {name:<22} : {value}")
