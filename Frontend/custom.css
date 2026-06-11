@@ -684,5 +684,12 @@ body.light-mode .notification-panel {
     background: rgba(0,0,0,0.6);
     z-index: 1039;
     backdrop-filter: blur(2px);
+}
+
+/* Spinner rotation for checklist analyzer */
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }
+

@@ -136,10 +136,10 @@
           <span class="material-symbols-outlined">memory</span>
           <span>MODEL SPECS</span>
         </div>
-        <a href="#threat-logs-section" class="sidebar-link" id="sidebarLogsLink">
+        <div class="sidebar-link" id="sidebarLogsLink" data-tab-target="scan-logs" role="tab" aria-selected="false">
           <span class="material-symbols-outlined">history</span>
           <span>SCAN LOGS</span>
-        </a>
+        </div>
       </div>
 
       <!-- Active classifier info + emergency -->
@@ -263,23 +263,88 @@
             </div>
           </section>
 
-          <!-- ── SCANNING TERMINAL ── -->
+          <!-- ── SCANNING TERMINAL & DIAGNOSTIC CHECKLIST ── -->
           <section id="scanningLoader" class="mb-5 d-none">
-            <div class="terminal-window shadow-lg">
-              <div class="terminal-header">
-                <div class="terminal-dot red"></div>
-                <div class="terminal-dot yellow"></div>
-                <div class="terminal-dot green"></div>
-                <span class="mono ms-2 text-secondary" style="font-size: 11px;">SENTINEL SCANNER ENGINE | ACTIVE RUNTIME</span>
-              </div>
-              <div class="terminal-body" id="terminalLogBody"></div>
-              <div class="p-3 border-top d-flex align-items-center justify-content-between"
-                   style="border-color: var(--outline-variant) !important; background-color: var(--surface-dim);">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                  <span class="mono text-primary fw-bold" id="loaderStateText" style="font-size: 11px;">INITIALIZING SCAN...</span>
+            <div class="row g-4">
+              <!-- Left: Terminal Log -->
+              <div class="col-lg-8">
+                <div class="terminal-window shadow-lg h-100 d-flex flex-column">
+                  <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <span class="mono ms-2 text-secondary" style="font-size: 11px;">SENTINEL SCANNER ENGINE | ACTIVE RUNTIME</span>
+                  </div>
+                  <div class="terminal-body flex-grow-1" id="terminalLogBody" style="min-height: 240px; max-height: 320px;"></div>
+                  
+                  <!-- Scan Completion Rate Progress Bar -->
+                  <div class="progress" style="height: 5px; background-color: var(--surface-container-high); border-radius: 0;">
+                    <div id="loaderProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%; transition: width 0.05s ease;"></div>
+                  </div>
+                  
+                  <div class="p-3 border-top d-flex align-items-center justify-content-between"
+                       style="border-color: var(--outline-variant) !important; background-color: var(--surface-dim);">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      <span class="mono text-primary fw-bold" id="loaderStateText" style="font-size: 11px;">INITIALIZING SCAN...</span>
+                    </div>
+                    <span class="mono text-secondary" id="loaderPercentage" style="font-size: 11px;">0% COMPLETE</span>
+                  </div>
                 </div>
-                <span class="mono text-secondary" id="loaderPercentage" style="font-size: 11px;">0% COMPLETE</span>
+              </div>
+              
+              <!-- Right: Diagnostic Checklist -->
+              <div class="col-lg-4">
+                <div class="glass-panel h-100 p-4 d-flex flex-column justify-content-between" style="background: rgba(8, 16, 35, 0.9);">
+                  <div>
+                    <h5 class="mono text-primary mb-3" style="font-size: 13px; letter-spacing: 0.05em;">DIAGNOSTIC CHECKLIST</h5>
+                    <p class="text-secondary mono mb-4" style="font-size: 10px; letter-spacing: 0.02em;">ACTIVE HEURISTIC ANALYSIS METRICS:</p>
+                    
+                    <div class="d-flex flex-column gap-3">
+                      <!-- Check 1 -->
+                      <div id="check-stage-1" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-1" style="display: inline-block;">radio_button_unchecked</span>
+                          <div class="mono" style="font-size: 11px; color: var(--on-surface);">1. Structure & Scheme</div>
+                        </div>
+                        <span class="badge rounded mono text-secondary" id="check-badge-1" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                      </div>
+                      
+                      <!-- Check 2 -->
+                      <div id="check-stage-2" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-2" style="display: inline-block;">radio_button_unchecked</span>
+                          <div class="mono" style="font-size: 11px; color: var(--on-surface);">2. Hostname Lexicals</div>
+                        </div>
+                        <span class="badge rounded mono text-secondary" id="check-badge-2" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                      </div>
+                      
+                      <!-- Check 3 -->
+                      <div id="check-stage-3" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-3" style="display: inline-block;">radio_button_unchecked</span>
+                          <div class="mono" style="font-size: 11px; color: var(--on-surface);">3. Content & Type Ratios</div>
+                        </div>
+                        <span class="badge rounded mono text-secondary" id="check-badge-3" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                      </div>
+                      
+                      <!-- Check 4 -->
+                      <div id="check-stage-4" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-4" style="display: inline-block;">radio_button_unchecked</span>
+                          <div class="mono" style="font-size: 11px; color: var(--on-surface);">4. Random Forest ML</div>
+                        </div>
+                        <span class="badge rounded mono text-secondary" id="check-badge-4" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4 pt-3 border-top" style="border-color: var(--outline-variant) !important;">
+                    <div class="mono text-secondary" style="font-size: 9px; line-height: 1.5;">
+                      Our security engine calculates standard deviation metrics of subpages, entropy score of string tokens, and checks character distribution ratios to flag spoofed interfaces.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -875,52 +940,55 @@
           </div>
         </div><!-- /model-specs -->
 
-        <!-- ==================== THREAT SCAN LOGS ==================== -->
-        <section class="mt-5 border-top pt-4" id="threat-logs-section"
-                 style="border-color: var(--outline-variant) !important;">
-          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-            <div>
-              <h4 class="mono text-uppercase tracking-wider m-0"
-                  style="font-size: 14px; color: var(--on-surface);">Threat Intelligence Scan Logs</h4>
-              <span class="mono text-secondary" style="font-size: 10px;">SESSION DATALOGGER PERSISTENCE</span>
-            </div>
-            <!-- Controls row -->
-            <div class="d-flex flex-wrap align-items-center gap-2">
-              <input type="text" id="logSearchInput"
-                     class="form-control mono py-1 px-3"
-                     style="width: 180px; font-size: 12px; border-radius: var(--radius-md);
-                            background-color: var(--surface-container-low) !important;
-                            border-color: var(--outline-variant) !important;
-                            color: var(--on-surface) !important;"
-                     placeholder="Filter by URL...">
-
-              <select id="logFilterSelect"
-                      class="form-select mono py-1"
-                      style="width: 140px; font-size: 12px; border-radius: var(--radius-md);
-                             background-color: var(--surface-container-low) !important;
-                             border-color: var(--outline-variant) !important;
-                             color: var(--on-surface) !important;">
-                <option value="all">ALL VERDICTS</option>
-                <option value="phishing">PHISHING ONLY</option>
-                <option value="legitimate">SAFE ONLY</option>
-              </select>
-
-              <button class="btn btn-sm mono d-flex align-items-center gap-1"
-                      id="exportLogsBtn"
-                      style="font-size: 11px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,240,255,0.06);">
-                <span class="material-symbols-outlined fs-6">download</span> EXPORT JSON
-              </button>
-
-              <button class="btn btn-sm mono d-flex align-items-center gap-1"
-                      id="clearLogsBtn"
-                      style="font-size: 11px; border: 1px solid var(--tertiary); color: var(--tertiary); background: rgba(255,0,85,0.06);">
-                <span class="material-symbols-outlined fs-6">delete_forever</span> CLEAR
-              </button>
-            </div>
+        <!-- ==================== TAB 4: THREAT SCAN LOGS ==================== -->
+        <div id="scan-logs" class="tab-content">
+          <div class="glass-panel p-4 rounded-3">
+            <section id="threat-logs-section">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                <div>
+                  <h4 class="mono text-uppercase tracking-wider m-0"
+                      style="font-size: 14px; color: var(--on-surface);">Threat Intelligence Scan Logs</h4>
+                  <span class="mono text-secondary" style="font-size: 10px;">SESSION DATALOGGER PERSISTENCE</span>
+                </div>
+                <!-- Controls row -->
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <input type="text" id="logSearchInput"
+                         class="form-control mono py-1 px-3"
+                         style="width: 180px; font-size: 12px; border-radius: var(--radius-md);
+                                background-color: var(--surface-container-low) !important;
+                                border-color: var(--outline-variant) !important;
+                                color: var(--on-surface) !important;"
+                         placeholder="Filter by URL...">
+    
+                  <select id="logFilterSelect"
+                          class="form-select mono py-1"
+                          style="width: 140px; font-size: 12px; border-radius: var(--radius-md);
+                                 background-color: var(--surface-container-low) !important;
+                                 border-color: var(--outline-variant) !important;
+                                 color: var(--on-surface) !important;">
+                    <option value="all">ALL VERDICTS</option>
+                    <option value="phishing">PHISHING ONLY</option>
+                    <option value="legitimate">SAFE ONLY</option>
+                  </select>
+    
+                  <button class="btn btn-sm mono d-flex align-items-center gap-1"
+                          id="exportLogsBtn"
+                          style="font-size: 11px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,240,255,0.06);">
+                    <span class="material-symbols-outlined fs-6">download</span> EXPORT JSON
+                  </button>
+    
+                  <button class="btn btn-sm mono d-flex align-items-center gap-1"
+                          id="clearLogsBtn"
+                          style="font-size: 11px; border: 1px solid var(--tertiary); color: var(--tertiary); background: rgba(255,0,85,0.06);">
+                    <span class="material-symbols-outlined fs-6">delete_forever</span> CLEAR
+                  </button>
+                </div>
+              </div>
+    
+              <div class="d-flex flex-column gap-2" id="logsHistoryContainer"></div>
+            </section>
           </div>
-
-          <div class="d-flex flex-column gap-2" id="logsHistoryContainer"></div>
-        </section>
+        </div>
 
       </div><!-- /container-xxl -->
     </main>
@@ -1148,10 +1216,7 @@
     let selectedReportType = null;
 
     // ── IN-MEMORY LOG DATABASE ─────────────────────────────────────────────────
-    let logsDatabase = [
-      { url: 'https://github.com/sentinel-x/core', timestamp: '2026.06.09 11:42:01', verdict: 'LEGITIMATE', score: 5.2 },
-      { url: 'http://paypa1-security-verification.com/login', timestamp: '2026.06.09 11:35:48', verdict: 'PHISHING', score: 94.8 }
-    ];
+    let logsDatabase = [];
 
     // ── TOAST SYSTEM ──────────────────────────────────────────────────────────
     const toastStack = document.getElementById('toast-stack');
@@ -1250,11 +1315,8 @@
     // ── SCROLL-TO-LOGS FROM SIDEBAR ───────────────────────────────────────────
     sidebarLogsLink.addEventListener('click', (e) => {
       e.preventDefault();
-      switchTab('command-center');
+      switchTab('scan-logs');
       closeMobileSidebar();
-      setTimeout(() => {
-        document.getElementById('threat-logs-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 120);
     });
 
     // ── NOTIFICATION BELL ────────────────────────────────────────────────────
@@ -1351,10 +1413,30 @@
     }
 
     window.loadAndScanUrl = function (url) {
-      urlInput.value = url;
-      switchTab('command-center');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => scanForm.dispatchEvent(new Event('submit')), 200);
+      const cachedItem = logsDatabase.find(item => item.url === url);
+      if (cachedItem && cachedItem.features) {
+        // Switch to Command Center tab
+        switchTab('command-center');
+        
+        // Hide loaders and show dashboard
+        skeletonLoader.classList.add('d-none');
+        scanningLoader.classList.add('d-none');
+        resultDashboard.classList.remove('d-none');
+        
+        // Populate the URL input field
+        urlInput.value = url;
+        
+        // Display cached results directly using completeScan
+        completeScan(cachedItem.url, cachedItem.features);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('LOADED FROM LOGS', 'Displaying cached scan history results.', 'success', 2500);
+      } else {
+        // Fallback: load and scan if not cached
+        urlInput.value = url;
+        switchTab('command-center');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => scanForm.dispatchEvent(new Event('submit')), 200);
+      }
     };
 
     logSearchInput.addEventListener('input', renderLogs);
@@ -1558,6 +1640,96 @@
       terminalLogBody.scrollTop = terminalLogBody.scrollHeight;
     }
 
+    // ── DIAGNOSTIC CHECKLIST VISUAL FEEDBACK helpers ───────────────────────────
+    function updateDiagnosticChecklist(progress) {
+      const updateStage = (stageNum, state) => {
+        const card = document.getElementById(`check-stage-${stageNum}`);
+        const icon = document.getElementById(`check-icon-${stageNum}`);
+        const badge = document.getElementById(`check-badge-${stageNum}`);
+        if (!card || !icon || !badge) return;
+        
+        if (state === 'pending') {
+          card.style.borderColor = 'var(--outline-variant)';
+          card.style.background = 'var(--surface-container-low)';
+          icon.innerText = 'radio_button_unchecked';
+          icon.style.animation = 'none';
+          icon.className = 'material-symbols-outlined text-secondary fs-5';
+          badge.innerText = 'PENDING';
+          badge.className = 'badge rounded mono text-secondary';
+          badge.style.background = 'rgba(255,255,255,0.06)';
+        } else if (state === 'analyzing') {
+          card.style.borderColor = 'var(--primary)';
+          card.style.background = 'rgba(0, 240, 255, 0.05)';
+          icon.innerText = 'sync';
+          icon.className = 'material-symbols-outlined text-primary fs-5';
+          icon.style.animation = 'spin 1.5s linear infinite';
+          badge.innerText = 'ANALYZING';
+          badge.className = 'badge rounded mono text-primary';
+          badge.style.background = 'rgba(0, 240, 255, 0.12)';
+        } else if (state === 'completed') {
+          card.style.borderColor = 'var(--secondary)';
+          card.style.background = 'rgba(16, 185, 129, 0.05)';
+          icon.innerText = 'check_circle';
+          icon.style.animation = 'none';
+          icon.className = 'material-symbols-outlined text-success fs-5';
+          badge.innerText = 'COMPLETE';
+          badge.className = 'badge rounded mono text-success';
+          badge.style.background = 'rgba(16, 185, 129, 0.12)';
+        }
+      };
+
+      if (progress < 25) {
+        updateStage(1, 'analyzing');
+        updateStage(2, 'pending');
+        updateStage(3, 'pending');
+        updateStage(4, 'pending');
+      } else if (progress >= 25 && progress < 50) {
+        updateStage(1, 'completed');
+        updateStage(2, 'analyzing');
+        updateStage(3, 'pending');
+        updateStage(4, 'pending');
+      } else if (progress >= 50 && progress < 75) {
+        updateStage(1, 'completed');
+        updateStage(2, 'completed');
+        updateStage(3, 'analyzing');
+        updateStage(4, 'pending');
+      } else if (progress >= 75 && progress < 100) {
+        updateStage(1, 'completed');
+        updateStage(2, 'completed');
+        updateStage(3, 'completed');
+        updateStage(4, 'analyzing');
+      } else if (progress >= 100) {
+        updateStage(1, 'completed');
+        updateStage(2, 'completed');
+        updateStage(3, 'completed');
+        updateStage(4, 'completed');
+      }
+    }
+
+    function resetDiagnosticChecklist() {
+      const updateStage = (stageNum) => {
+        const card = document.getElementById(`check-stage-${stageNum}`);
+        const icon = document.getElementById(`check-icon-${stageNum}`);
+        const badge = document.getElementById(`check-badge-${stageNum}`);
+        if (!card || !icon || !badge) return;
+        card.style.borderColor = 'var(--outline-variant)';
+        card.style.background = 'var(--surface-container-low)';
+        icon.innerText = 'radio_button_unchecked';
+        icon.style.animation = 'none';
+        icon.className = 'material-symbols-outlined text-secondary fs-5';
+        badge.innerText = 'PENDING';
+        badge.className = 'badge rounded mono text-secondary';
+        badge.style.background = 'rgba(255,255,255,0.06)';
+      };
+      updateStage(1);
+      updateStage(2);
+      updateStage(3);
+      updateStage(4);
+      
+      const progressBar = document.getElementById('loaderProgressBar');
+      if (progressBar) progressBar.style.width = '0%';
+    }
+
     // ── SCAN FORM SUBMIT ──────────────────────────────────────────────────────
     scanForm.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -1569,6 +1741,7 @@
       skeletonLoader.classList.remove('d-none');
       scanningLoader.classList.add('d-none');
       terminalLogBody.innerHTML = '';
+      resetDiagnosticChecklist();
 
       const features = extractFeatures(rawUrl);
 
@@ -1610,6 +1783,15 @@
         const interval = setInterval(() => {
           progress = Math.min(100, progress + 2);
           loaderPercentage.innerText = `${progress}% COMPLETE`;
+
+          // Update progress bar
+          const progressBar = document.getElementById('loaderProgressBar');
+          if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+          }
+
+          // Update visual diagnostic checklist stages
+          updateDiagnosticChecklist(progress);
 
           if (idx < stages.length && progress >= stages[idx].pct) {
             loaderStateText.innerText = stages[idx].text;
@@ -1751,7 +1933,17 @@
 
       // Add to logs
       const ts = new Date().toISOString().replace('T', ' ').substring(0, 19).replace(/-/g, '.');
-      logsDatabase.unshift({ url, timestamp: ts, verdict: pred.isPhishing ? 'PHISHING' : 'LEGITIMATE', score: pred.score });
+      const existingIndex = logsDatabase.findIndex(item => item.url === url);
+      if (existingIndex !== -1) {
+        logsDatabase.splice(existingIndex, 1);
+      }
+      logsDatabase.unshift({
+        url,
+        timestamp: ts,
+        verdict: pred.isPhishing ? 'PHISHING' : 'LEGITIMATE',
+        score: pred.score,
+        features: features
+      });
       renderLogs();
     }
 
