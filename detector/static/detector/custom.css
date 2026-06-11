@@ -896,3 +896,23 @@ body.light-mode .profile-panel {
   text-align: center;
 }
 
+/* =========================================================
+   UTILITY & WARNING CLASSES
+   ========================================================= */
+.tracking-tighter { letter-spacing: -0.05em; }
+.tracking-tight   { letter-spacing: -0.025em; }
+.tracking-wider   { letter-spacing: 0.05em; }
+
+.critical-warning {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--tertiary) !important;
+  background: rgba(255, 0, 85, 0.08);
+  color: var(--on-surface);
+  align-items: flex-start;
+  margin-top: var(--space-md);
+}
+
+
