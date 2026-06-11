@@ -195,10 +195,11 @@
           <section class="mb-5">
             <div class="glass-panel p-4 rounded-3 shadow-lg glow-hover position-relative overflow-hidden">
               <form id="scanForm" class="row g-3" novalidate>
+                {% csrf_token %}
                 <div class="col-lg-9 col-md-8">
                   <div class="position-relative">
                     <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-primary"
-                          style="left: 20px; pointer-events: none;">link</span>
+                          style="left: 20px; pointer-events: none; display: inline-flex; align-items: center; justify-content: center;">link</span>
                     <input type="text" id="urlInput"
                            class="form-control py-3 px-5 mono"
                            style="border-radius: var(--radius-md);
@@ -1421,28 +1422,28 @@
       const badges = [];
 
       if (features.has_at_symbol) {
-        badges.push(`<span class="badge badge-threat rounded-pill">⚠️ HAS @ SYMBOL</span>`);
+        badges.push(`<span class="badge badge-threat rounded-pill d-inline-flex align-items-center gap-1">⚠️ <span>HAS @ SYMBOL</span></span>`);
       }
       if (features.has_ip) {
-        badges.push(`<span class="badge badge-threat rounded-pill">⚠️ RAW IP ADDRESS</span>`);
+        badges.push(`<span class="badge badge-threat rounded-pill d-inline-flex align-items-center gap-1">⚠️ <span>RAW IP ADDRESS</span></span>`);
       }
       if (features.url_length > 70) {
-        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ OVERLY LONG URL</span>`);
+        badges.push(`<span class="badge badge-warn rounded-pill d-inline-flex align-items-center gap-1">⚠️ <span>OVERLY LONG URL</span></span>`);
       }
       if (val.startsWith('http://')) {
-        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ INSECURE HTTP</span>`);
+        badges.push(`<span class="badge badge-warn rounded-pill d-inline-flex align-items-center gap-1">⚠️ <span>INSECURE HTTP</span></span>`);
       }
       if (features.subdomain_count > 2) {
-        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ MULTIPLE SUBDOMAINS</span>`);
+        badges.push(`<span class="badge badge-warn rounded-pill d-inline-flex align-items-center gap-1">⚠️ <span>MULTIPLE SUBDOMAINS</span></span>`);
       }
 
       if (badges.length === 0) {
         const looksLikeUrl = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$/.test(val);
         if (looksLikeUrl) {
-          badges.push(`<span class="badge badge-safe rounded-pill">✓ VALID STRUCTURE</span>`);
+          badges.push(`<span class="badge badge-safe rounded-pill d-inline-flex align-items-center gap-1">✓ <span>VALID STRUCTURE</span></span>`);
           urlInput.style.borderColor = 'var(--secondary)';
         } else {
-          badges.push(`<span class="badge rounded-pill" style="background: rgba(255,255,255,0.06); color: var(--on-surface-variant); border: 1px solid var(--outline-variant);">MALFORMED STRING</span>`);
+          badges.push(`<span class="badge rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(255,255,255,0.06); color: var(--on-surface-variant); border: 1px solid var(--outline-variant);"><span>MALFORMED STRING</span></span>`);
           urlInput.style.borderColor = 'var(--outline-variant)';
         }
       } else {
@@ -1505,12 +1506,12 @@
         const badgeCls   = isPhish ? 'badge-threat' : 'badge-safe';
         const iconLabel  = isPhish ? 'warning' : 'check_circle';
         const iconColor  = isPhish ? 'var(--tertiary)' : 'var(--secondary)';
-        const safeUrl    = item.url.replace(/'/g, "\\'");
+        const safeId     = (item.id || item.url).replace(/'/g, "\\'");
 
         logsHistoryContainer.insertAdjacentHTML('beforeend', `
           <div class="glass-panel p-3 rounded-2 hover-bg-high d-flex justify-content-between align-items-center pointer active-scale"
                style="background-color: var(--surface-container-low); border: 1px solid var(--outline-variant); cursor: pointer;"
-               onclick="loadAndScanUrl('${safeUrl}')"
+               onclick="loadAndScanUrl('${safeId}')"
                role="button" aria-label="Re-scan ${item.url}">
             <div class="d-flex align-items-center gap-3 overflow-hidden">
               <span class="material-symbols-outlined flex-shrink-0" style="color: ${iconColor};">${iconLabel}</span>
@@ -1526,8 +1527,8 @@
       });
     }
 
-    window.loadAndScanUrl = function (url) {
-      const cachedItem = logsDatabase.find(item => item.url === url);
+    window.loadAndScanUrl = function (id) {
+      const cachedItem = logsDatabase.find(item => item.id === id || item.url === id);
       if (cachedItem && cachedItem.features) {
         // Switch to Command Center tab
         switchTab('command-center');
@@ -1538,7 +1539,7 @@
         resultDashboard.classList.remove('d-none');
         
         // Populate the URL input field
-        urlInput.value = url;
+        urlInput.value = cachedItem.url;
         
         // Display cached results directly using completeScan
         completeScan({
@@ -1549,11 +1550,11 @@
           ip: cachedItem.ip || 'Unknown',
           location: cachedItem.location || 'Unknown',
           domain_age: cachedItem.domain_age || 'Unknown'
-        });
+        }, true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         showToast('LOADED FROM LOGS', 'Displaying cached scan history results.', 'success', 2500);
       } else {
-        urlInput.value = url;
+        urlInput.value = id;
         switchTab('command-center');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => scanForm.dispatchEvent(new Event('submit')), 200);
@@ -1864,7 +1865,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': getCookie('csrftoken') || ''
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken') || ''
         },
         body: new URLSearchParams({ 'url': rawUrl })
       })
@@ -1965,13 +1966,13 @@
             clearInterval(interval);
             setTimeout(() => completeScan(apiResponse), 400);
           }
-        }, 40);
+        }, 80);
 
       }, 600);
     });
 
     // ── COMPLETE SCAN RENDER ───────────────────────────────────────────────────
-    function completeScan(data) {
+    function completeScan(data, isCached = false) {
       if (!data) return;
       scanningLoader.classList.add('d-none');
       resultDashboard.classList.remove('d-none');
@@ -2087,28 +2088,27 @@
 
       inferenceTime.innerText = `${Math.floor(Math.random() * 6 + 4)}ms`;
 
-      // Add to logs
-      const ts = new Date().toISOString().replace('T', ' ').substring(0, 19).replace(/-/g, '.');
-      const existingIndex = logsDatabase.findIndex(item => item.url === url);
-      if (existingIndex !== -1) {
-        logsDatabase.splice(existingIndex, 1);
+      // Add to logs only if this is a fresh scan (not loaded from cache history)
+      if (!isCached) {
+        const ts = new Date().toISOString().replace('T', ' ').substring(0, 19).replace(/-/g, '.');
+        logsDatabase.unshift({
+          id: 'scan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          url,
+          timestamp: ts,
+          verdict: data.verdict,
+          score: confidence,
+          features: features,
+          ip: data.ip,
+          location: data.location,
+          domain_age: data.domain_age
+        });
+        try {
+          localStorage.setItem('sentinel_scan_logs', JSON.stringify(logsDatabase));
+        } catch (e) {
+          console.error('Error saving logs to localStorage:', e);
+        }
+        renderLogs();
       }
-      logsDatabase.unshift({
-        url,
-        timestamp: ts,
-        verdict: data.verdict,
-        score: confidence,
-        features: features,
-        ip: data.ip,
-        location: data.location,
-        domain_age: data.domain_age
-      });
-      try {
-        localStorage.setItem('sentinel_scan_logs', JSON.stringify(logsDatabase));
-      } catch (e) {
-        console.error('Error saving logs to localStorage:', e);
-      }
-      renderLogs();
     }
 
   })();
