@@ -703,9 +703,8 @@ body.light-mode .notification-panel {
 
 /* Spinner rotation for checklist analyzer */
 @keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* =========================================================
@@ -809,7 +808,6 @@ body.light-mode .profile-panel {
 .profile-stats {
   display: flex;
   padding: 14px 20px;
-  gap: 0;
   border-bottom: 1px solid var(--outline-variant);
 }
 .profile-stat {
@@ -820,15 +818,17 @@ body.light-mode .profile-panel {
 .profile-stat + .profile-stat {
   border-left: 1px solid var(--outline-variant);
 }
-.profile-stat-val {
+.profile-stat-val,
+.profile-stat-label {
   font-family: 'JetBrains Mono', monospace;
+}
+.profile-stat-val {
   font-size: 20px;
   font-weight: 700;
   color: var(--primary);
   line-height: 1.2;
 }
 .profile-stat-label {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.1em;
   color: var(--on-surface-variant);
@@ -903,6 +903,25 @@ body.light-mode .profile-panel {
 .tracking-tight   { letter-spacing: -0.025em; }
 .tracking-wider   { letter-spacing: 0.05em; }
 
+/* Status indicator helpers */
+.status-online  { color: var(--secondary) !important; }
+.status-offline { color: var(--on-surface-variant) !important; }
+.dot-online     { background: var(--secondary) !important; }
+.dot-offline    { background: var(--on-surface-variant) !important; }
+
+/* Cursor helpers */
+.cursor-not-allowed { cursor: not-allowed !important; }
+
+/* Border divider */
+.border-subtle { border-color: var(--outline-variant) !important; }
+
+/* Label size helpers */
+.label-xs  { font-size: 10px; letter-spacing: 0.05em; }
+.label-xxs { font-size: 9px;  letter-spacing: 0.1em; }
+
+/* =========================================================
+   CRITICAL WARNING BANNER
+   ========================================================= */
 .critical-warning {
   display: flex;
   gap: var(--space-sm);
@@ -915,4 +934,143 @@ body.light-mode .profile-panel {
   margin-top: var(--space-md);
 }
 
+/* =========================================================
+   URL SCANNER INPUT AREA
+   ========================================================= */
+.url-icon-prefix {
+  left: 20px;
+  pointer-events: none;
+}
+.url-input-field {
+  border-radius: var(--radius-md) !important;
+  background-color: var(--surface-container-lowest) !important;
+  border-color: var(--outline-variant) !important;
+  color: var(--on-surface) !important;
+  padding-right: 92px !important;
+}
+.url-action-btn {
+  color: var(--on-surface-variant) !important;
+  padding: 0 !important;
+  width: 24px;
+  height: 24px;
+}
+.btn-scan {
+  background-color: var(--primary) !important;
+  color: #050a15 !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  letter-spacing: 0.05em;
+}
 
+/* =========================================================
+   DIAGNOSTIC CHECKLIST
+   ========================================================= */
+.check-card {
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
+  transition: all 0.3s ease;
+}
+.check-badge {
+  font-size: 9px !important;
+  background: rgba(255,255,255,0.06) !important;
+  transition: all 0.3s ease;
+}
+
+/* =========================================================
+   PROGRESS TRACK VARIANTS
+   ========================================================= */
+/* Scan terminal progress bar (flat) */
+.progress-track {
+  height: 5px !important;
+  background-color: var(--surface-container-high) !important;
+  border-radius: 0 !important;
+}
+/* Engine metrics / small progress (5px, subtle bg) */
+.progress-sm {
+  height: 5px !important;
+  background-color: var(--surface-container-high) !important;
+}
+/* Feature importance progress bars (7px, rounded) */
+.progress-md {
+  height: 7px !important;
+  background-color: var(--surface-container-high) !important;
+  border-radius: 4px !important;
+}
+.progress-fill-primary {
+  background: var(--primary) !important;
+  border-radius: 4px;
+}
+.progress-fill-secondary {
+  background: var(--secondary) !important;
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+/* =========================================================
+   FEATURE MATRIX INFO BADGE
+   ========================================================= */
+.info-badge {
+  font-size: 9px !important;
+  cursor: help;
+  background: rgba(255,255,255,0.06) !important;
+  color: var(--on-surface-variant) !important;
+}
+
+/* =========================================================
+   SENTINEL INPUT / SELECT FIELDS
+   ========================================================= */
+.sentinel-input {
+  font-size: 12px !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--surface-container-low) !important;
+  border-color: var(--outline-variant) !important;
+  color: var(--on-surface) !important;
+}
+
+/* =========================================================
+   LOG CONTROL BUTTONS
+   ========================================================= */
+.btn-export {
+  font-size: 11px;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  background: rgba(0,240,255,0.06);
+}
+.btn-danger-soft {
+  font-size: 11px;
+  border: 1px solid var(--tertiary);
+  color: var(--tertiary);
+  background: rgba(255,0,85,0.06);
+}
+
+/* =========================================================
+   OUTLINE ACTION BUTTONS (copy / export report)
+   ========================================================= */
+.btn-outline-custom {
+  border-radius: var(--radius-md);
+  color: var(--on-surface-variant);
+  border: 1px solid var(--outline);
+  background: transparent;
+}
+
+/* =========================================================
+   MODAL ACTION BUTTONS
+   ========================================================= */
+.modal-btn-cancel {
+  border: 1px solid var(--outline);
+  color: var(--on-surface-variant);
+  background: transparent;
+  font-size: 12px;
+}
+.modal-btn-danger {
+  background: rgba(255,0,85,0.15);
+  border: 1px solid var(--tertiary);
+  color: var(--tertiary);
+  font-size: 12px;
+}
+.modal-btn-primary {
+  background: rgba(var(--primary-rgb),0.12);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 12px;
+}

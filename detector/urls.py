@@ -15,4 +15,5 @@ urlpatterns = [
     path('disclosures/', views.legal_page, {'page': 'disclosures'}, name='disclosures'),
     path('api/scan/', views.scan_url_api, name='scan_api'),
     path('api/report-feedback/', views.report_feedback, name='report_feedback'),
+    path('api/verify-password/', views.verify_password, name='verify_password'),
 ]

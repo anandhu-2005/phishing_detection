@@ -452,3 +452,24 @@ def report_feedback(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'error': 'POST method required'}, status=400)
+
+
+def verify_password(request):
+    """
+    Verifies the currently logged-in user's password for the Emergency Lock screen.
+    Accepts a JSON body with a 'password' field and returns {'valid': true/false}.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=400)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'valid': False, 'error': 'Not authenticated'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        password = data.get('password', '')
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'valid': False, 'error': 'Invalid JSON'}, status=400)
+
+    is_valid = request.user.check_password(password)
+    return JsonResponse({'valid': is_valid})

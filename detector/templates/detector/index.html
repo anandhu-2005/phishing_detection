@@ -101,8 +101,12 @@
               <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
             </div>
             <div class="d-none d-sm-flex flex-column align-items-start">
-              <span class="mono fw-bold" style="font-size: 11px; color: var(--on-surface); line-height: 1.2;">ANALYST-01</span>
-              <span class="mono" style="font-size: 9px; color: var(--secondary); letter-spacing: 0.06em;">● ONLINE</span>
+              <span class="mono fw-bold" style="font-size: 11px; color: var(--on-surface); line-height: 1.2;">
+                {% if user.is_authenticated %}{{ user.username }}{% else %}GUEST USER{% endif %}
+              </span>
+              <span class="mono {% if user.is_authenticated %}status-online{% else %}status-offline{% endif %}" style="font-size: 9px; letter-spacing: 0.06em;">
+                {% if user.is_authenticated %}● ONLINE{% else %}● OFFLINE{% endif %}
+              </span>
             </div>
             <span class="material-symbols-outlined d-none d-sm-inline" id="profileChevron"
                   style="font-size: 16px; color: var(--on-surface-variant); transition: transform 0.2s;">expand_more</span>
@@ -116,11 +120,17 @@
                 <span class="material-symbols-outlined" style="font-size: 28px;">person</span>
               </div>
               <div>
-                <div class="mono fw-bold" style="font-size: 13px; color: var(--on-surface);">ANALYST-01</div>
-                <div class="mono" style="font-size: 10px; color: var(--on-surface-variant);">analyst-01@sentinel-x.local</div>
+                <div class="mono fw-bold" style="font-size: 13px; color: var(--on-surface);">
+                  {% if user.is_authenticated %}{{ user.username }}{% else %}GUEST USER{% endif %}
+                </div>
+                <div class="mono" style="font-size: 10px; color: var(--on-surface-variant);">
+                  {% if user.is_authenticated %}{{ user.email }}{% else %}No active registration{% endif %}
+                </div>
                 <div class="d-flex align-items-center gap-1 mt-1">
-                  <span style="width:6px; height:6px; border-radius:50%; background: var(--secondary); display:inline-block;"></span>
-                  <span class="mono" style="font-size: 9px; color: var(--secondary);">SESSION ACTIVE</span>
+                  <span class="{% if user.is_authenticated %}dot-online{% else %}dot-offline{% endif %}" style="width:6px; height:6px; border-radius:50%; display:inline-block;"></span>
+                  <span class="mono {% if user.is_authenticated %}status-online{% else %}status-offline{% endif %}" style="font-size: 9px;">
+                    {% if user.is_authenticated %}SESSION ACTIVE{% else %}LIMITED SESSION{% endif %}
+                  </span>
                 </div>
               </div>
             </div>
@@ -143,20 +153,37 @@
 
             <!-- Actions -->
             <div class="profile-actions">
-              <button class="profile-action-btn" id="switchAccountBtn" role="menuitem">
-                <span class="material-symbols-outlined" style="font-size: 18px;">switch_account</span>
-                <div>
-                  <div style="font-weight: 600; font-size: 12px;">Switch Account</div>
-                  <div style="font-size: 10px; color: var(--on-surface-variant);">Sign in as a different analyst</div>
-                </div>
-              </button>
-              <button class="profile-action-btn danger" id="deleteAccountBtn" role="menuitem">
-                <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
-                <div>
-                  <div style="font-weight: 600; font-size: 12px;">Delete Account</div>
-                  <div style="font-size: 10px; opacity: 0.75;">Permanently remove this analyst node</div>
-                </div>
-              </button>
+              {% if user.is_authenticated %}
+                <button class="profile-action-btn" id="switchAccountBtn" role="menuitem">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">switch_account</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 12px;">Switch Account</div>
+                    <div style="font-size: 10px; color: var(--on-surface-variant);">Sign in as a different analyst</div>
+                  </div>
+                </button>
+                <button class="profile-action-btn danger" id="deleteAccountBtn" role="menuitem">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 12px;">Delete Account</div>
+                    <div style="font-size: 10px; opacity: 0.75;">Permanently remove this analyst node</div>
+                  </div>
+                </button>
+                <a class="profile-action-btn text-decoration-none" href="{% url 'user_logout' %}" role="menuitem">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 12px; color: var(--on-surface);">Sign Out</div>
+                    <div style="font-size: 10px; color: var(--on-surface-variant);">Close active session</div>
+                  </div>
+                </a>
+              {% else %}
+                <a class="profile-action-btn text-decoration-none" href="{% url 'user_login' %}" role="menuitem">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 12px; color: var(--primary);">Sign In</div>
+                    <div style="font-size: 10px; color: var(--on-surface-variant);">Access scan logs & lock screen</div>
+                  </div>
+                </a>
+              {% endif %}
             </div>
 
             <!-- Footer -->
@@ -205,7 +232,7 @@
           <span class="material-symbols-outlined">memory</span>
           <span>MODEL SPECS</span>
         </div>
-        <div class="sidebar-link" id="sidebarLogsLink" data-tab-target="scan-logs" role="tab" aria-selected="false">
+        <div class="sidebar-link {% if not user.is_authenticated %}opacity-50 cursor-not-allowed{% endif %}" id="sidebarLogsLink" data-tab-target="scan-logs" role="tab" aria-selected="false" {% if not user.is_authenticated %}title="Authentication required to view logs"{% endif %}>
           <span class="material-symbols-outlined">history</span>
           <span>SCAN LOGS</span>
         </div>
@@ -218,9 +245,9 @@
           <div class="mono text-secondary" style="font-size: 9px;">ACTIVE CLASSIFIER</div>
           <div class="mono text-light fw-bold" style="font-size: 11px;">RandomForest-v2.0</div>
         </div>
-        <button class="btn btn-outline-danger w-100 py-2 active-scale mono text-uppercase d-flex align-items-center justify-content-center gap-2"
+        <button class="btn btn-outline-danger w-100 py-2 active-scale mono text-uppercase d-flex align-items-center justify-content-center gap-2 {% if not user.is_authenticated %}opacity-50 cursor-not-allowed{% endif %}"
                 id="emergencyLockBtn"
-                title="Emergency Lock blacks out the current analyst screen, hides scan output, and marks this local session as isolated until you reload or return to the scanner."
+                title="{% if user.is_authenticated %}Emergency Lock blacks out the current analyst screen, hides scan output, and marks this local session as isolated until you reload or return to the scanner.{% else %}Authentication required for Emergency Lock{% endif %}"
                 data-bs-toggle="tooltip"
                 data-bs-placement="right"
                 style="font-size: 12px; border-radius: var(--radius-md);">
@@ -266,37 +293,29 @@
                 {% csrf_token %}
                 <div class="col-lg-9 col-md-8">
                   <div class="position-relative">
-                    <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-primary"
-                          style="left: 20px; pointer-events: none; display: inline-flex; align-items: center; justify-content: center;">link</span>
+                    <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-primary url-icon-prefix">link</span>
                     <input type="text" id="urlInput"
-                           class="form-control py-3 px-5 mono"
-                           style="border-radius: var(--radius-md);
-                                  background-color: var(--surface-container-lowest) !important;
-                                  border-color: var(--outline-variant) !important;
-                                  color: var(--on-surface) !important;
-                                  padding-right: 92px !important;"
+                           class="form-control py-3 px-5 mono url-input-field"
                            placeholder="Paste suspicious URL (e.g., http://paypa1-security-verify.com/login)"
                            required autocomplete="off" spellcheck="false">
                     <button type="button"
-                            class="btn btn-outline-secondary btn-sm position-absolute top-50 translate-middle-y border-0 d-none d-flex align-items-center justify-content-center"
-                            id="clearUrlBtn" style="right: 48px; color: var(--on-surface-variant); padding: 0; width: 24px; height: 24px;"
+                            class="btn btn-outline-secondary btn-sm position-absolute top-50 translate-middle-y border-0 d-none d-flex align-items-center justify-content-center url-action-btn"
+                            id="clearUrlBtn" style="right: 48px;"
                             title="Clear URL" aria-label="Clear URL">
-                      <span class="material-symbols-outlined fs-5" style="line-height: 1;">close</span>
+                      <span class="material-symbols-outlined fs-5">close</span>
                     </button>
                     <button type="button"
-                            class="btn btn-outline-secondary btn-sm position-absolute top-50 translate-middle-y border-0 d-flex align-items-center justify-content-center"
-                            id="pasteBtn" style="right: 15px; color: var(--on-surface-variant); padding: 0; width: 24px; height: 24px;"
+                            class="btn btn-outline-secondary btn-sm position-absolute top-50 translate-middle-y border-0 d-flex align-items-center justify-content-center url-action-btn"
+                            id="pasteBtn" style="right: 15px;"
                             title="Paste from clipboard">
-                      <span class="material-symbols-outlined fs-5" style="line-height: 1;">content_paste</span>
+                      <span class="material-symbols-outlined fs-5">content_paste</span>
                     </button>
                   </div>
                   <div id="urlInputFeedback" class="mt-2 mono d-flex flex-wrap gap-2" style="font-size: 11px; min-height: 18px;"></div>
                 </div>
                 <div class="col-lg-3 col-md-4">
                   <button type="submit" id="analyzeBtn"
-                          class="btn btn-primary w-100 py-3 active-scale fw-bold d-flex align-items-center justify-content-center gap-2"
-                          style="background-color: var(--primary); color: #050a15; border: none;
-                                 border-radius: var(--radius-md); letter-spacing: 0.05em;">
+                          class="btn w-100 py-3 active-scale fw-bold d-flex align-items-center justify-content-center gap-2 btn-scan">
                     <span class="material-symbols-outlined">bolt</span>
                     ANALYZE METRICS
                   </button>
@@ -379,7 +398,7 @@
                   <div class="terminal-body flex-grow-1" id="terminalLogBody" style="min-height: 240px; max-height: 320px;"></div>
                   
                   <!-- Scan Completion Rate Progress Bar -->
-                  <div class="progress" style="height: 5px; background-color: var(--surface-container-high); border-radius: 0;">
+                  <div class="progress progress-track">
                     <div id="loaderProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%; transition: width 0.05s ease;"></div>
                   </div>
                   
@@ -400,42 +419,41 @@
                   <div>
                     <h5 class="mono text-primary mb-3" style="font-size: 13px; letter-spacing: 0.05em;">DIAGNOSTIC CHECKLIST</h5>
                     <p class="text-secondary mono mb-4" style="font-size: 10px; letter-spacing: 0.02em;">ACTIVE HEURISTIC ANALYSIS METRICS:</p>
-                    
                     <div class="d-flex flex-column gap-3">
                       <!-- Check 1 -->
-                      <div id="check-stage-1" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                      <div id="check-stage-1" class="check-card d-flex align-items-center justify-content-between p-2 rounded">
                         <div class="d-flex align-items-center gap-2">
-                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-1" style="display: inline-block;">radio_button_unchecked</span>
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-1">radio_button_unchecked</span>
                           <div class="mono" style="font-size: 11px; color: var(--on-surface);">1. Structure & Scheme</div>
                         </div>
-                        <span class="badge rounded mono text-secondary" id="check-badge-1" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                        <span class="badge rounded mono text-secondary check-badge" id="check-badge-1">PENDING</span>
                       </div>
                       
                       <!-- Check 2 -->
-                      <div id="check-stage-2" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                      <div id="check-stage-2" class="check-card d-flex align-items-center justify-content-between p-2 rounded">
                         <div class="d-flex align-items-center gap-2">
-                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-2" style="display: inline-block;">radio_button_unchecked</span>
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-2">radio_button_unchecked</span>
                           <div class="mono" style="font-size: 11px; color: var(--on-surface);">2. Hostname Lexicals</div>
                         </div>
-                        <span class="badge rounded mono text-secondary" id="check-badge-2" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                        <span class="badge rounded mono text-secondary check-badge" id="check-badge-2">PENDING</span>
                       </div>
                       
                       <!-- Check 3 -->
-                      <div id="check-stage-3" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                      <div id="check-stage-3" class="check-card d-flex align-items-center justify-content-between p-2 rounded">
                         <div class="d-flex align-items-center gap-2">
-                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-3" style="display: inline-block;">radio_button_unchecked</span>
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-3">radio_button_unchecked</span>
                           <div class="mono" style="font-size: 11px; color: var(--on-surface);">3. Content & Type Ratios</div>
                         </div>
-                        <span class="badge rounded mono text-secondary" id="check-badge-3" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                        <span class="badge rounded mono text-secondary check-badge" id="check-badge-3">PENDING</span>
                       </div>
                       
                       <!-- Check 4 -->
-                      <div id="check-stage-4" class="d-flex align-items-center justify-content-between p-2 rounded" style="border: 1px solid var(--outline-variant); background: var(--surface-container-low); transition: all 0.3s ease;">
+                      <div id="check-stage-4" class="check-card d-flex align-items-center justify-content-between p-2 rounded">
                         <div class="d-flex align-items-center gap-2">
-                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-4" style="display: inline-block;">radio_button_unchecked</span>
+                          <span class="material-symbols-outlined text-secondary fs-5" id="check-icon-4">radio_button_unchecked</span>
                           <div class="mono" style="font-size: 11px; color: var(--on-surface);">4. Random Forest ML</div>
                         </div>
-                        <span class="badge rounded mono text-secondary" id="check-badge-4" style="font-size: 9px; background: rgba(255,255,255,0.06); transition: all 0.3s ease;">PENDING</span>
+                        <span class="badge rounded mono text-secondary check-badge" id="check-badge-4">PENDING</span>
                       </div>
                     </div>
                   </div>
@@ -488,7 +506,6 @@
                 </div>
 
                 <!-- Recommendation banner -->
-                <!-- {% if result == 'Phishing' %} -->
                 <div id="verdictBanner" class="critical-warning" style="display: none;">
                   <span class="material-symbols-outlined" id="verdictBannerIcon"></span>
                   <div>
@@ -496,7 +513,6 @@
                     <div class="mono" id="verdictBannerDesc" style="font-size: 12px; color: var(--on-surface-variant);"></div>
                   </div>
                 </div>
-                <!-- {% endif %} -->
 
                 <!-- Report a verdict feedback -->
                 <div class="mt-3 pt-3 border-top" style="border-color: var(--outline-variant) !important;">
@@ -525,10 +541,10 @@
                     <span class="material-symbols-outlined fs-6 align-middle me-1">tune</span>
                     Heuristic Feature Matrix
                   </h4>
-                  <span class="badge rounded mono" style="font-size: 9px; cursor: help; background: rgba(255,255,255,0.06); color: var(--on-surface-variant);"
+                  <span class="badge rounded mono info-badge"
                         title="Click any feature card to expand a detailed explanation.">CLICK CARD FOR DETAILS</span>
                 </div>
-                <p class="mb-4" style="font-size: 12px; line-height: 1.5; color: var(--on-surface-variant);">
+                <p class="mb-4 small text-secondary" style="line-height: 1.5;">
                   Our classifier extracts 12 structural metrics from the URL string. Click any card to expand a comprehensive explanation of why that metric triggers security alerts.
                 </p>
                 <!-- Features Grid -->
@@ -768,7 +784,6 @@
                 </div>
               </div>
 
-              <!-- Engine metrics -->
               <div class="glass-panel rounded-3 mb-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                   <span class="material-symbols-outlined text-info">analytics</span>
@@ -779,7 +794,7 @@
                     <span>MODEL ACCURACY</span>
                     <span class="text-success fw-bold">98.42%</span>
                   </div>
-                  <div class="progress" style="height: 5px; background-color: var(--surface-container-high);">
+                  <div class="progress progress-sm">
                     <div class="progress-bar bg-success" style="width: 98.42%"></div>
                   </div>
                 </div>
@@ -795,16 +810,12 @@
                         id="reScanBtn" style="border-radius: var(--radius-md); color: #050a15;">
                   <span class="material-symbols-outlined">refresh</span> SCAN NEXT DOMAIN
                 </button>
-                <button class="btn py-3 active-scale d-flex align-items-center justify-content-center gap-2"
-                        id="copyDetailsBtn"
-                        style="border-radius: var(--radius-md); color: var(--on-surface-variant);
-                               border: 1px solid var(--outline); background: transparent;">
+                <button class="btn py-3 active-scale d-flex align-items-center justify-content-center gap-2 btn-outline-custom"
+                        id="copyDetailsBtn">
                   <span class="material-symbols-outlined">content_copy</span> COPY SCAN METADATA
                 </button>
-                <button class="btn py-2 active-scale d-flex align-items-center justify-content-center gap-2"
-                        id="exportCurrentReportBtn"
-                        style="border-radius: var(--radius-md); color: var(--on-surface-variant);
-                               border: 1px solid var(--outline); background: transparent; font-size: 12px;">
+                <button class="btn py-2 active-scale d-flex align-items-center justify-content-center gap-2 btn-outline-custom"
+                        id="exportCurrentReportBtn" style="font-size: 12px;">
                   <span class="material-symbols-outlined fs-6">download</span> EXPORT FULL REPORT
                 </button>
               </div>
@@ -974,7 +985,7 @@
             </div>
 
             <!-- Feature Importance chart -->
-            <div class="mt-5 border-top pt-4" style="border-color: var(--outline-variant) !important;">
+            <div class="mt-5 border-top pt-4 border-subtle">
               <h5 class="mono text-primary mb-4">Feature Importance Weight Distribution</h5>
               <div>
                 <div class="mb-3">
@@ -982,8 +993,8 @@
                     <span>HTTPS Protocol Missing</span>
                     <span class="text-primary">23.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 23%; background: var(--primary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-primary" style="width: 23%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -991,8 +1002,8 @@
                     <span>URL Character Length</span>
                     <span class="text-primary">17.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 17%; background: var(--primary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-primary" style="width: 17%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -1000,8 +1011,8 @@
                     <span>TLD String in Path</span>
                     <span class="text-primary">13.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 13%; background: var(--primary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-primary" style="width: 13%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -1009,8 +1020,8 @@
                     <span>Has IP Address Host</span>
                     <span class="text-primary">12.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 12%; background: var(--primary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-primary" style="width: 12%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -1018,8 +1029,8 @@
                     <span>@ Symbol in URL</span>
                     <span class="text-primary">10.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 10%; background: var(--primary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-primary" style="width: 10%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -1027,8 +1038,8 @@
                     <span>Subdomain Count</span>
                     <span class="text-primary">9.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 9%; background: var(--secondary); border-radius: 4px;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-secondary" style="width: 9%;"></div>
                   </div>
                 </div>
                 <div class="mb-3">
@@ -1036,8 +1047,8 @@
                     <span>Remaining Features</span>
                     <span class="text-primary">16.0%</span>
                   </div>
-                  <div class="progress" style="height: 7px; background-color: var(--surface-container-high); border-radius: 4px;">
-                    <div class="progress-bar" style="width: 16%; background: var(--secondary); border-radius: 4px; opacity: 0.6;"></div>
+                  <div class="progress progress-md">
+                    <div class="progress-bar progress-fill-secondary" style="width: 16%;"></div>
                   </div>
                 </div>
               </div>
@@ -1057,33 +1068,25 @@
               <!-- Controls row -->
               <div class="d-flex flex-wrap align-items-center gap-2">
                 <input type="text" id="logSearchInput"
-                       class="form-control mono py-1 px-3"
-                       style="width: 180px; font-size: 12px; border-radius: var(--radius-md);
-                              background-color: var(--surface-container-low) !important;
-                              border-color: var(--outline-variant) !important;
-                              color: var(--on-surface) !important;"
+                       class="form-control mono py-1 px-3 sentinel-input"
+                       style="width: 180px;"
                        placeholder="Filter by URL...">
 
                 <select id="logFilterSelect"
-                        class="form-select mono py-1"
-                        style="width: 140px; font-size: 12px; border-radius: var(--radius-md);
-                               background-color: var(--surface-container-low) !important;
-                               border-color: var(--outline-variant) !important;
-                               color: var(--on-surface) !important;">
+                        class="form-select mono py-1 sentinel-input"
+                        style="width: 140px;">
                   <option value="all">ALL VERDICTS</option>
                   <option value="phishing">PHISHING ONLY</option>
                   <option value="legitimate">SAFE ONLY</option>
                 </select>
 
-                <button class="btn btn-sm mono d-flex align-items-center gap-1"
-                        id="exportLogsBtn"
-                        style="font-size: 11px; border: 1px solid var(--primary); color: var(--primary); background: rgba(0,240,255,0.06);">
+                <button class="btn btn-sm mono d-flex align-items-center gap-1 btn-export"
+                        id="exportLogsBtn">
                   <span class="material-symbols-outlined fs-6">download</span> EXPORT JSON
                 </button>
 
-                <button class="btn btn-sm mono d-flex align-items-center gap-1"
-                        id="clearLogsBtn"
-                        style="font-size: 11px; border: 1px solid var(--tertiary); color: var(--tertiary); background: rgba(255,0,85,0.06);">
+                <button class="btn btn-sm mono d-flex align-items-center gap-1 btn-danger-soft"
+                        id="clearLogsBtn">
                   <span class="material-symbols-outlined fs-6">delete_forever</span> CLEAR
                 </button>
               </div>
@@ -1127,12 +1130,10 @@
         This will permanently erase all session threat intelligence logs. This action cannot be undone.
       </p>
       <div class="d-flex gap-2 justify-content-end">
-        <button class="btn py-2 px-4 mono active-scale" id="confirmModalCancel"
-                style="border: 1px solid var(--outline); color: var(--on-surface-variant); background: transparent; font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale modal-btn-cancel" id="confirmModalCancel">
           CANCEL
         </button>
-        <button class="btn py-2 px-4 mono active-scale fw-bold" id="confirmModalOk"
-                style="background: rgba(255,0,85,0.15); border: 1px solid var(--tertiary); color: var(--tertiary); font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale fw-bold modal-btn-danger" id="confirmModalOk">
           PURGE LOGS
         </button>
       </div>
@@ -1159,12 +1160,10 @@
         <div class="mono text-secondary mt-1" style="font-size: 10px;">Threat logs preserved. A session password will be required to restore access.</div>
       </div>
       <div class="d-flex gap-2 justify-content-end">
-        <button class="btn py-2 px-4 mono active-scale" id="emergencyModalCancel"
-                style="border: 1px solid var(--outline); color: var(--on-surface-variant); background: transparent; font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale modal-btn-cancel" id="emergencyModalCancel">
           ABORT
         </button>
-        <button class="btn py-2 px-4 mono active-scale fw-bold" id="emergencyModalConfirm"
-                style="background: rgba(255,0,85,0.15); border: 1px solid var(--tertiary); color: var(--tertiary); font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale fw-bold modal-btn-danger" id="emergencyModalConfirm">
           CONFIRM LOCKDOWN
         </button>
       </div>
@@ -1218,12 +1217,10 @@
       </div>
 
       <div class="d-flex gap-2 justify-content-end">
-        <button class="btn py-2 px-4 mono active-scale" id="reportModalCancel"
-                style="border: 1px solid var(--outline); color: var(--on-surface-variant); background: transparent; font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale modal-btn-cancel" id="reportModalCancel">
           CANCEL
         </button>
-        <button class="btn py-2 px-4 mono active-scale fw-bold" id="reportModalSubmit"
-                style="background: rgba(var(--primary-rgb),0.12); border: 1px solid var(--primary); color: var(--primary); font-size: 12px;">
+        <button class="btn py-2 px-4 mono active-scale fw-bold modal-btn-primary" id="reportModalSubmit">
           SUBMIT REPORT
         </button>
       </div>
@@ -1326,29 +1323,31 @@
     // Track last scan
     let lastScanData    = null;
     let selectedReportType = null;
-
-    // ── IN-MEMORY LOG DATABASE ─────────────────────────────────────────────────
-    let logsDatabase = [];
-    try {
-      const stored = localStorage.getItem('sentinel_scan_logs');
-      if (stored) {
-        logsDatabase = JSON.parse(stored);
-      }
-    } catch (e) {
-      console.error('Error loading logs from localStorage:', e);
-    }
+    let logsDatabase    = [];
 
     // If server provided initial logs (for authenticated users), use them and overwrite local logs
-    try {
-      const serverLogs = JSON.parse('{{ initial_logs_json|default:"[]"|escapejs }}');
-      const isAuth = '{{ user_is_authenticated|yesno:"true,false" }}' === 'true';
-      if (isAuth) {
+    const isAuth = '{{ user_is_authenticated|yesno:"true,false" }}' === 'true';
+    if (isAuth) {
+      try {
+        const stored = localStorage.getItem('sentinel_scan_logs');
+        if (stored) {
+          logsDatabase = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error('Error loading logs from localStorage:', e);
+      }
+
+      try {
+        const serverLogs = JSON.parse('{{ initial_logs_json|default:"[]"|escapejs }}');
         // When authenticated, replace local logs with server-provided (may be empty)
         logsDatabase = Array.isArray(serverLogs) ? serverLogs : [];
         try { localStorage.setItem('sentinel_scan_logs', JSON.stringify(logsDatabase)); } catch (e) {}
+      } catch (e) {
+        console.error('Error applying server logs:', e);
       }
-    } catch (e) {
-      console.error('Error applying server logs:', e);
+    } else {
+      logsDatabase = [];
+      try { localStorage.removeItem('sentinel_scan_logs'); } catch (e) {}
     }
 
     // ── TOAST SYSTEM ──────────────────────────────────────────────────────────
@@ -1421,6 +1420,10 @@
 
     // ── TAB NAVIGATION ────────────────────────────────────────────────────────
     function switchTab(targetId) {
+      if (targetId === 'scan-logs' && !isAuth) {
+        showToast('ACCESS RESTRICTED', 'Please sign in to view and save threat scan logs.', 'warn');
+        return;
+      }
       sidebarLinks.forEach(l => {
         l.classList.toggle('active', l.getAttribute('data-tab-target') === targetId);
         l.setAttribute('aria-selected', l.getAttribute('data-tab-target') === targetId ? 'true' : 'false');
@@ -1808,13 +1811,18 @@
     });
 
     // ── EMERGENCY LOCK ─────────────────────────────────────────────────────
-    emergencyLockBtn.addEventListener('click', () => openModal(emergencyModal));
+    emergencyLockBtn.addEventListener('click', () => {
+      if (!isAuth) {
+        showToast('ACCESS RESTRICTED', 'Emergency lockdown requires an authenticated analyst account.', 'warn');
+        return;
+      }
+      openModal(emergencyModal);
+    });
     emergencyModalCancel.addEventListener('click', () => closeModal(emergencyModal));
     emergencyModalConfirm.addEventListener('click', () => {
       closeModal(emergencyModal);
 
       // ── BUILD LOCKDOWN SCREEN ─────────────────────────────────────────────
-      const LOCK_PASSWORD = 'ANALYST-01'; // default session restore password
       let failedAttempts = 0;
       const MAX_ATTEMPTS = 5;
 
@@ -1848,7 +1856,7 @@
           <div style="font-size: 26px; font-weight: 700; color: var(--tertiary); letter-spacing: 0.15em;">SESSION LOCKED</div>
           <div style="font-size: 12px; color: var(--on-surface-variant); text-align: center; line-height: 1.7;">
             Emergency lockdown active. All analyser nodes are offline.<br>
-            Enter your session password to restore access.
+            Enter your account password to restore access.
           </div>
 
           <!-- Password form -->
@@ -1884,7 +1892,7 @@
 
             <!-- Hint -->
             <div style="font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 4px; text-align: center; letter-spacing: 0.04em;">
-              Hint: default password is your analyst ID
+              Enter your account password to unlock
             </div>
 
             <!-- Unlock button -->
@@ -1941,39 +1949,62 @@
       // Focus input immediately
       setTimeout(() => lockInput.focus(), 100);
 
-      // Unlock handler
+      // Unlock handler — verifies password server-side
       lockBtn.addEventListener('click', () => {
         const entered = lockInput.value.trim();
+        if (!entered) return;
 
-        if (entered.toUpperCase() === LOCK_PASSWORD.toUpperCase()) {
-          // ✅ Correct — animate out and remove
-          lockScreen.style.animation = 'overlayOut 0.35s ease forwards';
-          lockScreen.addEventListener('animationend', () => lockScreen.remove(), { once: true });
-          showToast('SESSION RESTORED', 'Analyst node back online. All systems operational.', 'success', 4000);
-        } else {
-          // ❌ Wrong password
-          failedAttempts++;
+        lockBtn.disabled = true;
+        lockBtn.textContent = 'VERIFYING...';
+
+        fetch('/api/verify-password/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') || ''
+          },
+          body: JSON.stringify({ password: entered })
+        })
+        .then(res => res.json())
+        .then(data => {
+          lockBtn.disabled = false;
+          lockBtn.textContent = '🔓 RESTORE SESSION';
           lockInput.value = '';
-          shakeLockInput();
-          lockWrapper.style.borderColor = 'rgba(255,0,85,0.9)';
-          lockWrapper.style.boxShadow   = '0 0 16px rgba(255,0,85,0.3)';
-          setTimeout(() => {
-            lockWrapper.style.borderColor = 'rgba(255,0,85,0.4)';
-            lockWrapper.style.boxShadow   = '';
-          }, 1200);
 
-          const remaining = MAX_ATTEMPTS - failedAttempts;
-          if (remaining <= 0) {
-            lockMsg.textContent = '⛔ TOO MANY FAILED ATTEMPTS — SESSION PERMANENTLY LOCKED';
-            lockMsg.style.color = 'rgba(255,0,85,1)';
-            lockBtn.disabled = true;
-            lockInput.disabled = true;
-            lockBtn.style.opacity = '0.4';
-            lockBtn.style.cursor = 'not-allowed';
+          if (data.valid) {
+            // ✅ Correct — animate out and remove
+            lockScreen.style.animation = 'overlayOut 0.35s ease forwards';
+            lockScreen.addEventListener('animationend', () => lockScreen.remove(), { once: true });
+            showToast('SESSION RESTORED', 'Analyst node back online. All systems operational.', 'success', 4000);
           } else {
-            lockMsg.textContent = `✗ INCORRECT PASSWORD — ${remaining} ATTEMPT${remaining === 1 ? '' : 'S'} REMAINING`;
+            // ❌ Wrong password
+            failedAttempts++;
+            shakeLockInput();
+            lockWrapper.style.borderColor = 'rgba(255,0,85,0.9)';
+            lockWrapper.style.boxShadow   = '0 0 16px rgba(255,0,85,0.3)';
+            setTimeout(() => {
+              lockWrapper.style.borderColor = 'rgba(255,0,85,0.4)';
+              lockWrapper.style.boxShadow   = '';
+            }, 1200);
+
+            const remaining = MAX_ATTEMPTS - failedAttempts;
+            if (remaining <= 0) {
+              lockMsg.textContent = '⛔ TOO MANY FAILED ATTEMPTS — SESSION PERMANENTLY LOCKED';
+              lockMsg.style.color = 'rgba(255,0,85,1)';
+              lockBtn.disabled = true;
+              lockInput.disabled = true;
+              lockBtn.style.opacity = '0.4';
+              lockBtn.style.cursor = 'not-allowed';
+            } else {
+              lockMsg.textContent = `✗ INCORRECT PASSWORD — ${remaining} ATTEMPT${remaining === 1 ? '' : 'S'} REMAINING`;
+            }
           }
-        }
+        })
+        .catch(() => {
+          lockBtn.disabled = false;
+          lockBtn.textContent = '🔓 RESTORE SESSION';
+          lockMsg.textContent = '⚠ NETWORK ERROR — Could not reach authentication server.';
+        });
       });
 
       showToast('EMERGENCY LOCKDOWN', 'Session isolated. Password required to restore.', 'error', 6000);
