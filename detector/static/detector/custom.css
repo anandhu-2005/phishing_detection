@@ -686,3 +686,12 @@ body.light-mode .notification-panel {
     backdrop-filter: blur(2px);
   }
 }
+
+/* Spinner rotation for checklist analyzer */
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+

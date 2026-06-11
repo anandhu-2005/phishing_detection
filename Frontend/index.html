@@ -208,6 +208,7 @@
                           title="Paste from clipboard">
                     <span class="material-symbols-outlined fs-5">content_paste</span>
                   </button>
+                  <div id="urlInputFeedback" class="mt-2 mono d-flex flex-wrap gap-2" style="font-size: 11px; min-height: 18px;"></div>
                 </div>
                 <div class="col-lg-3 col-md-4">
                   <button type="submit" id="analyzeBtn"
@@ -387,11 +388,11 @@
                 </div>
 
                 <!-- Recommendation banner -->
-                {% if result == 'Phishing' %}
-                    <div class="critical-warning">
-                        ⚠️ Critical Alert Warning — Heuristic system has identified high correlation with phishing structures.
-                    </div>
-                {% endif %}
+                <!-- {% if result == 'Phishing' %} -->
+                <div id="verdictBanner" class="critical-warning" style="display: none;">
+                ⚠️ Critical Alert Warning — Heuristic system has identified high correlation with phishing structures.
+                </div>
+                <!-- {% endif %} -->
 
                 <!-- Report a verdict feedback -->
                 <div class="mt-3 pt-3 border-top" style="border-color: var(--outline-variant) !important;">
@@ -1217,6 +1218,14 @@
 
     // ── IN-MEMORY LOG DATABASE ─────────────────────────────────────────────────
     let logsDatabase = [];
+    try {
+      const stored = localStorage.getItem('sentinel_scan_logs');
+      if (stored) {
+        logsDatabase = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Error loading logs from localStorage:', e);
+    }
 
     // ── TOAST SYSTEM ──────────────────────────────────────────────────────────
     const toastStack = document.getElementById('toast-stack');
@@ -1351,6 +1360,58 @@
       }
     });
 
+    const urlInputFeedback = document.getElementById('urlInputFeedback');
+
+    function validateUrlInputLive() {
+      if (!urlInputFeedback) return;
+      urlInputFeedback.innerHTML = '';
+      const val = urlInput.value.trim();
+      if (!val) {
+        urlInput.style.borderColor = 'var(--outline-variant)';
+        return;
+      }
+
+      const features = extractFeatures(val);
+      const badges = [];
+
+      if (features.has_at_symbol) {
+        badges.push(`<span class="badge badge-threat rounded-pill">⚠️ HAS @ SYMBOL</span>`);
+      }
+      if (features.has_ip) {
+        badges.push(`<span class="badge badge-threat rounded-pill">⚠️ RAW IP ADDRESS</span>`);
+      }
+      if (features.url_length > 70) {
+        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ OVERLY LONG URL</span>`);
+      }
+      if (val.startsWith('http://')) {
+        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ INSECURE HTTP</span>`);
+      }
+      if (features.subdomain_count > 2) {
+        badges.push(`<span class="badge badge-warn rounded-pill">⚠️ MULTIPLE SUBDOMAINS</span>`);
+      }
+
+      if (badges.length === 0) {
+        const looksLikeUrl = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$/.test(val);
+        if (looksLikeUrl) {
+          badges.push(`<span class="badge badge-safe rounded-pill">✓ VALID STRUCTURE</span>`);
+          urlInput.style.borderColor = 'var(--secondary)';
+        } else {
+          badges.push(`<span class="badge rounded-pill" style="background: rgba(255,255,255,0.06); color: var(--on-surface-variant); border: 1px solid var(--outline-variant);">MALFORMED STRING</span>`);
+          urlInput.style.borderColor = 'var(--outline-variant)';
+        }
+      } else {
+        urlInput.style.borderColor = 'var(--tertiary)';
+      }
+
+      urlInputFeedback.innerHTML = badges.join(' ');
+    }
+
+    urlInput.addEventListener('input', validateUrlInputLive);
+
+    pasteBtn.addEventListener('click', () => {
+      setTimeout(validateUrlInputLive, 50);
+    });
+
     // ── FEATURE CARD EXPAND/COLLAPSE ──────────────────────────────────────────
     document.querySelectorAll('.feature-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -1455,6 +1516,11 @@
     confirmModalCancel.addEventListener('click', () => closeModal(confirmModal));
     confirmModalOk.addEventListener('click', () => {
       logsDatabase = [];
+      try {
+        localStorage.removeItem('sentinel_scan_logs');
+      } catch (e) {
+        console.error('Error clearing localStorage logs:', e);
+      }
       renderLogs();
       closeModal(confirmModal);
       showToast('LOGS PURGED', 'All session threat intelligence logs have been cleared.', 'warn');
@@ -1875,6 +1941,7 @@
         dialCircle.className        = 'gauge-val-phish';
 
         if (verdictBanner) {
+          verdictBanner.style.display = 'block';
           verdictBanner.className       = 'mt-4 p-3 rounded border d-flex gap-3';
           verdictBanner.style.cssText   = 'border-color: var(--tertiary) !important; background: rgba(255,0,85,0.08);';
         }
@@ -1906,19 +1973,7 @@
         dialCircle.className        = 'gauge-val-safe';
 
         if (verdictBanner) {
-          verdictBanner.className       = 'mt-4 p-3 rounded border d-flex gap-3';
-          verdictBanner.style.cssText   = 'border-color: var(--secondary) !important; background: rgba(16,185,129,0.08);';
-        }
-        if (verdictBannerIcon) {
-          verdictBannerIcon.innerText   = 'verified';
-          verdictBannerIcon.className   = 'material-symbols-outlined text-success fs-4';
-        }
-        if (verdictBannerTitle) {
-          verdictBannerTitle.innerText  = 'DOMAIN RECORD CLEAR';
-          verdictBannerTitle.className  = 'fw-bold mb-1 text-success';
-        }
-        if (verdictBannerDesc) {
-          verdictBannerDesc.innerText   = 'The URL is structurally consistent with safe domain configurations. Standard heuristics did not flag spoofing characteristics.';
+          verdictBanner.style.display = 'none';
         }
 
         const oct = Math.floor(Math.random() * 254 + 1);
@@ -1944,6 +1999,11 @@
         score: pred.score,
         features: features
       });
+      try {
+        localStorage.setItem('sentinel_scan_logs', JSON.stringify(logsDatabase));
+      } catch (e) {
+        console.error('Error saving logs to localStorage:', e);
+      }
       renderLogs();
     }
 
