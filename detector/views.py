@@ -192,25 +192,38 @@ def scan_url_api(request):
         "tld_in_path":         feature_list[11]
     }
 
-    # 2. Get prediction (Check whitelist first, then ML/Heuristics)
+    # 2. Get prediction (whitelist → community votes → ML → heuristics)
+    CORRECTION_THRESHOLD = 3
+
     if is_whitelisted(url):
         is_phishing = False
         confidence = 100.0
-    elif model is not None:
-        try:
-            prediction = model.predict([feature_list])[0]
-            # predict_proba returns probability for both classes [[prob_legit, prob_phish]]
-            proba = model.predict_proba([feature_list])[0]
-            confidence = round(proba.max() * 100, 1)
-            is_phishing = (prediction == 1)
-        except Exception as e:
-            print(f"Prediction error: {e}. Falling back to heuristics.")
-            is_phishing, confidence = heuristic_predict(feature_list)
     else:
-        is_phishing, confidence = heuristic_predict(feature_list)
+        false_positive_votes = FeedbackReport.objects.filter(
+            url=url, report_type='false_positive'
+        ).count()
+        missed_threat_votes = FeedbackReport.objects.filter(
+            url=url, report_type='missed_threat'
+        ).count()
 
+        if false_positive_votes >= CORRECTION_THRESHOLD and false_positive_votes > missed_threat_votes:
+            is_phishing = False
+            confidence = 100.0
+        elif missed_threat_votes >= CORRECTION_THRESHOLD and missed_threat_votes > false_positive_votes:
+            is_phishing = True
+            confidence = 100.0
+        elif model is not None:
+            try:
+                prediction = model.predict([feature_list])[0]
+                proba = model.predict_proba([feature_list])[0]
+                confidence = round(proba.max() * 100, 1)
+                is_phishing = (prediction == 1)
+            except Exception as e:
+                print(f"Prediction error: {e}. Falling back to heuristics.")
+                is_phishing, confidence = heuristic_predict(feature_list)
+        else:
+            is_phishing, confidence = heuristic_predict(feature_list)
     verdict = 'PHISHING' if is_phishing else 'LEGITIMATE'
-
     # 3. Retrieve WHOIS and geolocation metrics
     info = extract_full_info(url)
 
