@@ -91,11 +91,79 @@
           </div>
         </div>
 
-        <!-- Analyst identity -->
-        <div class="d-flex align-items-center gap-2 border-start ps-3"
+        <!-- Analyst identity + profile dropdown -->
+        <div class="position-relative border-start ps-3" id="profileWrapper"
              style="border-color: var(--outline-variant) !important;">
-          <span class="material-symbols-outlined text-primary">account_circle</span>
-          <span class="mono text-secondary d-none d-sm-inline" style="font-size: 12px;">ANALYST-01</span>
+          <button class="btn border-0 p-0 d-flex align-items-center gap-2 profile-btn" id="profileBtn"
+                  aria-label="Analyst profile menu" aria-expanded="false" aria-haspopup="true"
+                  style="background: none;">
+            <div class="profile-avatar">
+              <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
+            </div>
+            <div class="d-none d-sm-flex flex-column align-items-start">
+              <span class="mono fw-bold" style="font-size: 11px; color: var(--on-surface); line-height: 1.2;">ANALYST-01</span>
+              <span class="mono" style="font-size: 9px; color: var(--secondary); letter-spacing: 0.06em;">● ONLINE</span>
+            </div>
+            <span class="material-symbols-outlined d-none d-sm-inline" id="profileChevron"
+                  style="font-size: 16px; color: var(--on-surface-variant); transition: transform 0.2s;">expand_more</span>
+          </button>
+
+          <!-- Profile dropdown panel -->
+          <div class="profile-panel d-none" id="profilePanel" role="menu" aria-labelledby="profileBtn">
+            <!-- Header -->
+            <div class="profile-panel-header">
+              <div class="profile-avatar-lg">
+                <span class="material-symbols-outlined" style="font-size: 28px;">person</span>
+              </div>
+              <div>
+                <div class="mono fw-bold" style="font-size: 13px; color: var(--on-surface);">ANALYST-01</div>
+                <div class="mono" style="font-size: 10px; color: var(--on-surface-variant);">analyst-01@sentinel-x.local</div>
+                <div class="d-flex align-items-center gap-1 mt-1">
+                  <span style="width:6px; height:6px; border-radius:50%; background: var(--secondary); display:inline-block;"></span>
+                  <span class="mono" style="font-size: 9px; color: var(--secondary);">SESSION ACTIVE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats row -->
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <div class="profile-stat-val" id="profileScanCount">0</div>
+                <div class="profile-stat-label">SCANS</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-val" id="profilePhishCount">0</div>
+                <div class="profile-stat-label">THREATS</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-val" id="profileSafeCount">0</div>
+                <div class="profile-stat-label">CLEAN</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="profile-actions">
+              <button class="profile-action-btn" id="switchAccountBtn" role="menuitem">
+                <span class="material-symbols-outlined" style="font-size: 18px;">switch_account</span>
+                <div>
+                  <div style="font-weight: 600; font-size: 12px;">Switch Account</div>
+                  <div style="font-size: 10px; color: var(--on-surface-variant);">Sign in as a different analyst</div>
+                </div>
+              </button>
+              <button class="profile-action-btn danger" id="deleteAccountBtn" role="menuitem">
+                <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
+                <div>
+                  <div style="font-weight: 600; font-size: 12px;">Delete Account</div>
+                  <div style="font-size: 10px; opacity: 0.75;">Permanently remove this analyst node</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="profile-panel-footer">
+              <span class="mono" style="font-size: 9px; color: var(--on-surface-variant);">SENTINEL-X ANALYST PORTAL v2.0</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1066,7 +1134,7 @@
         <div class="mono text-danger fw-bold" style="font-size: 11px; letter-spacing: 0.1em;">
           ⚠ SESSION DATA WILL BE ISOLATED
         </div>
-        <div class="mono text-secondary mt-1" style="font-size: 10px;">Threat logs preserved. Reload page to restore service.</div>
+        <div class="mono text-secondary mt-1" style="font-size: 10px;">Threat logs preserved. A session password will be required to restore access.</div>
       </div>
       <div class="d-flex gap-2 justify-content-end">
         <button class="btn py-2 px-4 mono active-scale" id="emergencyModalCancel"
@@ -1164,6 +1232,14 @@
     const bellBadge         = document.getElementById('bellBadge');
     const clearBellBtn      = document.getElementById('clearBellBtn');
     const sidebarLogsLink   = document.getElementById('sidebarLogsLink');
+
+    // Profile dropdown
+    const profileWrapper    = document.getElementById('profileWrapper');
+    const profileBtn        = document.getElementById('profileBtn');
+    const profilePanel      = document.getElementById('profilePanel');
+    const profileChevron    = document.getElementById('profileChevron');
+    const switchAccountBtn  = document.getElementById('switchAccountBtn');
+    const deleteAccountBtn  = document.getElementById('deleteAccountBtn');
 
     // Form & scanner elements
     const scanForm          = document.getElementById('scanForm');
@@ -1289,6 +1365,7 @@
       if (e.key === 'Escape') {
         [confirmModal, emergencyModal, reportModal].forEach(closeModal);
         closeNotificationPanel();
+        closeProfilePanel();
       }
     });
 
@@ -1337,6 +1414,76 @@
       else openMobileSidebar();
     });
     mobileSidebarBackdrop.addEventListener('click', closeMobileSidebar);
+
+    // ── PROFILE DROPDOWN ──────────────────────────────────────────────────────
+    function updateProfileStats() {
+      const total   = logsDatabase.length;
+      const threats = logsDatabase.filter(l => l.verdict === 'PHISHING').length;
+      const clean   = total - threats;
+      const sc = document.getElementById('profileScanCount');
+      const pc = document.getElementById('profilePhishCount');
+      const sk = document.getElementById('profileSafeCount');
+      if (sc) sc.textContent = total;
+      if (pc) pc.textContent = threats;
+      if (sk) sk.textContent = clean;
+    }
+
+    function openProfilePanel() {
+      profilePanel.classList.remove('d-none');
+      profileBtn.setAttribute('aria-expanded', 'true');
+      profileChevron.style.transform = 'rotate(180deg)';
+      updateProfileStats();
+    }
+    function closeProfilePanel() {
+      profilePanel.classList.add('d-none');
+      profileBtn.setAttribute('aria-expanded', 'false');
+      profileChevron.style.transform = 'rotate(0deg)';
+    }
+
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = !profilePanel.classList.contains('d-none');
+      closeNotificationPanel();
+      if (isOpen) closeProfilePanel(); else openProfilePanel();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileWrapper.contains(e.target)) closeProfilePanel();
+    });
+
+    switchAccountBtn.addEventListener('click', () => {
+      closeProfilePanel();
+      showToast('SWITCH ACCOUNT', 'Redirecting to authentication portal...', 'info', 3000);
+      setTimeout(() => { window.location.href = '/admin-dashboard/login/'; }, 1200);
+    });
+
+    deleteAccountBtn.addEventListener('click', () => {
+      closeProfilePanel();
+      // Reuse the confirm modal with custom messaging
+      document.getElementById('confirmModalTitle').textContent = 'DELETE ANALYST NODE';
+      document.getElementById('confirmModalMsg').textContent =
+        'This will permanently remove all local session data, scan logs, and analyst preferences. This action cannot be undone.';
+      document.getElementById('confirmModalOk').textContent = 'DELETE NODE';
+      openModal(confirmModal);
+      // One-time override of the OK handler for account deletion
+      const originalOkHandler = confirmModalOk._deleteHandler;
+      if (originalOkHandler) confirmModalOk.removeEventListener('click', originalOkHandler);
+      function deleteHandler() {
+        localStorage.clear();
+        logsDatabase = [];
+        renderLogs();
+        closeModal(confirmModal);
+        // Reset modal text back to log purge defaults
+        document.getElementById('confirmModalTitle').textContent = 'CONFIRM PURGE';
+        document.getElementById('confirmModalMsg').textContent =
+          'This will permanently erase all session threat intelligence logs. This action cannot be undone.';
+        document.getElementById('confirmModalOk').textContent = 'PURGE LOGS';
+        showToast('NODE DELETED', 'Analyst session and all local data have been cleared.', 'warn', 4000);
+        confirmModalOk.removeEventListener('click', deleteHandler);
+      }
+      confirmModalOk._deleteHandler = deleteHandler;
+      confirmModalOk.addEventListener('click', deleteHandler);
+    });
 
     // ── SCROLL-TO-LOGS FROM SIDEBAR ───────────────────────────────────────────
     sidebarLogsLink.addEventListener('click', (e) => {
@@ -1592,31 +1739,171 @@
     emergencyModalCancel.addEventListener('click', () => closeModal(emergencyModal));
     emergencyModalConfirm.addEventListener('click', () => {
       closeModal(emergencyModal);
-      // Overlay a fullscreen lockdown screen
+
+      // ── BUILD LOCKDOWN SCREEN ─────────────────────────────────────────────
+      const LOCK_PASSWORD = 'ANALYST-01'; // default session restore password
+      let failedAttempts = 0;
+      const MAX_ATTEMPTS = 5;
+
       const lockScreen = document.createElement('div');
       lockScreen.id = 'lockdownScreen';
       lockScreen.style.cssText = `
         position: fixed; inset: 0; z-index: 99999;
-        background: #020408; display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 16px;
+        background: #020408;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 0;
         font-family: 'JetBrains Mono', monospace;
         animation: overlayIn 0.4s ease;
       `;
       lockScreen.innerHTML = `
-        <span class="material-symbols-outlined" style="font-size: 72px; color: var(--tertiary); animation: pulse-phish 1.4s infinite;">lock</span>
-        <div style="font-size: 28px; font-weight: 700; color: var(--tertiary); letter-spacing: 0.15em;">SESSION LOCKED</div>
-        <div style="font-size: 13px; color: var(--on-surface-variant); text-align: center; max-width: 380px; line-height: 1.6;">
-          Emergency lockdown active. All analyser nodes are offline.<br>Session data has been isolated.
+        <!-- Animated grid bg -->
+        <div style="
+          position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+          background-image:
+            linear-gradient(rgba(255,0,85,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,0,85,0.03) 1px, transparent 1px);
+          background-size: 40px 40px;
+        "></div>
+
+        <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 420px; padding: 24px;">
+
+          <!-- Lock icon -->
+          <span class="material-symbols-outlined" id="lockIcon"
+                style="font-size: 72px; color: var(--tertiary); animation: pulse-phish 1.4s infinite;">lock</span>
+
+          <!-- Title -->
+          <div style="font-size: 26px; font-weight: 700; color: var(--tertiary); letter-spacing: 0.15em;">SESSION LOCKED</div>
+          <div style="font-size: 12px; color: var(--on-surface-variant); text-align: center; line-height: 1.7;">
+            Emergency lockdown active. All analyser nodes are offline.<br>
+            Enter your session password to restore access.
+          </div>
+
+          <!-- Password form -->
+          <div id="lockPasswordForm" style="width: 100%; margin-top: 8px;">
+            <div style="
+              display: flex; align-items: center;
+              border: 1px solid rgba(255,0,85,0.4); border-radius: 10px;
+              background: rgba(255,0,85,0.05);
+              overflow: hidden;
+              transition: border-color 0.2s, box-shadow 0.2s;
+            " id="lockInputWrapper">
+              <span class="material-symbols-outlined"
+                    style="font-size: 20px; color: rgba(255,0,85,0.6); padding: 0 14px; flex-shrink: 0;">key</span>
+              <input
+                id="lockPasswordInput"
+                type="password"
+                placeholder="Session password"
+                autocomplete="off"
+                style="
+                  flex: 1; background: transparent; border: none; outline: none;
+                  color: #fff; font-family: 'JetBrains Mono', monospace;
+                  font-size: 14px; padding: 14px 0; letter-spacing: 0.08em;
+                "
+              />
+              <button id="lockToggleShow"
+                      style="background: none; border: none; cursor: pointer; padding: 0 14px; color: rgba(255,255,255,0.35); display: flex; align-items: center;">
+                <span class="material-symbols-outlined" id="lockToggleIcon" style="font-size: 18px;">visibility</span>
+              </button>
+            </div>
+
+            <!-- Attempt counter -->
+            <div id="lockAttemptMsg" style="font-size: 10px; color: rgba(255,0,85,0.7); margin-top: 6px; min-height: 16px; text-align: center; letter-spacing: 0.06em;"></div>
+
+            <!-- Hint -->
+            <div style="font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 4px; text-align: center; letter-spacing: 0.04em;">
+              Hint: default password is your analyst ID
+            </div>
+
+            <!-- Unlock button -->
+            <button id="lockUnlockBtn"
+                    style="
+                      width: 100%; margin-top: 18px; padding: 13px;
+                      border-radius: 10px;
+                      background: rgba(255,0,85,0.12);
+                      border: 1px solid var(--tertiary);
+                      color: var(--tertiary);
+                      font-family: 'JetBrains Mono', monospace;
+                      font-size: 13px; font-weight: 700;
+                      letter-spacing: 0.1em;
+                      cursor: pointer;
+                      transition: background 0.2s, box-shadow 0.2s;
+                    ">
+              🔓 RESTORE SESSION
+            </button>
+          </div>
         </div>
-        <button onclick="document.getElementById('lockdownScreen').remove()"
-                style="margin-top: 16px; padding: 10px 28px; border-radius: 8px;
-                       background: rgba(255,0,85,0.15); border: 1px solid var(--tertiary);
-                       color: var(--tertiary); font-family: inherit; font-size: 13px; cursor: pointer;">
-          RESTORE SESSION
-        </button>
       `;
       document.body.appendChild(lockScreen);
-      showToast('EMERGENCY LOCKDOWN', 'Session isolated. All nodes offline.', 'error', 6000);
+
+      // ── LOCK SCREEN LOGIC ───────────────────────────────────────────────────
+      const lockInput   = lockScreen.querySelector('#lockPasswordInput');
+      const lockBtn     = lockScreen.querySelector('#lockUnlockBtn');
+      const lockMsg     = lockScreen.querySelector('#lockAttemptMsg');
+      const lockWrapper = lockScreen.querySelector('#lockInputWrapper');
+      const toggleShow  = lockScreen.querySelector('#lockToggleShow');
+      const toggleIcon  = lockScreen.querySelector('#lockToggleIcon');
+
+      // Shake animation helper
+      function shakeLockInput() {
+        lockWrapper.style.animation = 'none';
+        lockWrapper.offsetHeight; // reflow
+        lockWrapper.style.animation = 'lockShake 0.4s ease';
+        lockWrapper.addEventListener('animationend', () => {
+          lockWrapper.style.animation = '';
+        }, { once: true });
+      }
+
+      // Toggle password visibility
+      toggleShow.addEventListener('click', () => {
+        const isText = lockInput.type === 'text';
+        lockInput.type = isText ? 'password' : 'text';
+        toggleIcon.textContent = isText ? 'visibility' : 'visibility_off';
+      });
+
+      // Submit on Enter key
+      lockInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') lockBtn.click();
+      });
+
+      // Focus input immediately
+      setTimeout(() => lockInput.focus(), 100);
+
+      // Unlock handler
+      lockBtn.addEventListener('click', () => {
+        const entered = lockInput.value;
+
+        if (entered === LOCK_PASSWORD) {
+          // ✅ Correct — animate out and remove
+          lockScreen.style.animation = 'overlayOut 0.35s ease forwards';
+          lockScreen.addEventListener('animationend', () => lockScreen.remove(), { once: true });
+          showToast('SESSION RESTORED', 'Analyst node back online. All systems operational.', 'success', 4000);
+        } else {
+          // ❌ Wrong password
+          failedAttempts++;
+          lockInput.value = '';
+          shakeLockInput();
+          lockWrapper.style.borderColor = 'rgba(255,0,85,0.9)';
+          lockWrapper.style.boxShadow   = '0 0 16px rgba(255,0,85,0.3)';
+          setTimeout(() => {
+            lockWrapper.style.borderColor = 'rgba(255,0,85,0.4)';
+            lockWrapper.style.boxShadow   = '';
+          }, 1200);
+
+          const remaining = MAX_ATTEMPTS - failedAttempts;
+          if (remaining <= 0) {
+            lockMsg.textContent = '⛔ TOO MANY FAILED ATTEMPTS — SESSION PERMANENTLY LOCKED';
+            lockMsg.style.color = 'rgba(255,0,85,1)';
+            lockBtn.disabled = true;
+            lockInput.disabled = true;
+            lockBtn.style.opacity = '0.4';
+            lockBtn.style.cursor = 'not-allowed';
+          } else {
+            lockMsg.textContent = `✗ INCORRECT PASSWORD — ${remaining} ATTEMPT${remaining === 1 ? '' : 'S'} REMAINING`;
+          }
+        }
+      });
+
+      showToast('EMERGENCY LOCKDOWN', 'Session isolated. Password required to restore.', 'error', 6000);
     });
 
     // ── REPORT VERDICT CHIPS ──────────────────────────────────────────────────
@@ -1966,7 +2253,7 @@
             clearInterval(interval);
             setTimeout(() => completeScan(apiResponse), 400);
           }
-        }, 80);
+        }, 100);
 
       }, 600);
     });
