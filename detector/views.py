@@ -149,26 +149,67 @@ def admin_dashboard_logout(request):
 @user_passes_test(lambda user: user.is_staff, login_url='admin_dashboard_login')
 def delete_scan_log(request, log_id):
     if request.method == 'POST':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', '')
         try:
             log = ScanLog.objects.get(id=log_id)
             log.delete()
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': 'Scan log successfully deleted.'})
             messages.success(request, 'Scan log successfully deleted.')
         except ScanLog.DoesNotExist:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Scan log not found.'}, status=404)
             messages.error(request, 'Scan log not found.')
     
     referer = request.META.get('HTTP_REFERER')
     if referer:
-        # Check if referer already has an anchor; if not, we can append #scan-logs-section to it
         if '#scan-logs-section' not in referer:
             if '?' in referer:
-                # If there are query parameters but no anchor, append the anchor
-                # Note: URL parsing or simple concatenation:
                 if '#' in referer:
                     referer = referer.split('#')[0] + '#scan-logs-section'
                 else:
                     referer = referer + '#scan-logs-section'
             else:
                 referer = referer + '#scan-logs-section'
+        return redirect(referer)
+    return redirect('admin_dashboard')
+
+@user_passes_test(lambda user: user.is_staff, login_url='admin_dashboard_login')
+def delete_user_account(request, user_id):
+    if request.method == 'POST':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', '')
+        
+        # Prevent self deletion
+        if request.user.id == user_id:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'You cannot delete your own admin account.'}, status=400)
+            messages.error(request, 'You cannot delete your own admin account.')
+            return redirect('admin_dashboard')
+
+        try:
+            User = get_user_model()
+            user_to_delete = User.objects.get(id=user_id)
+            username = user_to_delete.get_username()
+            user_to_delete.delete()
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': f'Account "{username}" successfully deleted.'})
+              
+            messages.success(request, f'Account "{username}" successfully deleted.')
+        except User.DoesNotExist:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'User account not found.'}, status=404)
+            messages.error(request, 'User account not found.')
+            
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        if '#registered-users-section' not in referer:
+            if '?' in referer:
+                if '#' in referer:
+                    referer = referer.split('#')[0] + '#registered-users-section'
+                else:
+                    referer = referer + '#registered-users-section'
+            else:
+                referer = referer + '#registered-users-section'
         return redirect(referer)
     return redirect('admin_dashboard')
 

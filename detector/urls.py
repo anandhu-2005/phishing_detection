@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin-dashboard/login/', views.admin_dashboard_login, name='admin_dashboard_login'),
     path('admin-dashboard/logout/', views.admin_dashboard_logout, name='admin_dashboard_logout'),
     path('admin-dashboard/delete-log/<int:log_id>/', views.delete_scan_log, name='delete_scan_log'),
+    path('admin-dashboard/delete-user/<int:user_id>/', views.delete_user_account, name='delete_user_account'),
     path('login/', views.user_login, name='user_login'),
     path('logout/', views.user_logout, name='user_logout'),
     path('signup/', views.user_signup, name='user_signup'),
