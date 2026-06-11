@@ -27,6 +27,11 @@
         <a href="{% url 'admin_dashboard_logout' %}" class="btn btn-sm mono" style="border: 1px solid var(--outline-variant); color: var(--on-surface);">Logout</a>
       </nav>
       <section class="container-fluid p-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}{{ message.tags }}{% endif %} py-2 mono mb-4" style="font-size: 12px;">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
         <div class="row g-3 mb-4">
           <div class="col-md-3"><div class="glass-panel"><span class="mono text-secondary" style="font-size: 11px;">TOTAL SCANS</span><div class="fs-2 fw-bold text-primary">{{ total }}</div></div></div>
           <div class="col-md-3"><div class="glass-panel"><span class="mono text-secondary" style="font-size: 11px;">PHISHING</span><div class="fs-2 fw-bold text-danger">{{ phishing }}</div></div></div>
@@ -119,13 +124,13 @@
             </div>
           </div>
         </section>
-        <section class="glass-panel mt-4">
+        <section class="glass-panel mt-4" id="scan-logs-section">
           <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-3">
             <div>
               <h2 class="mono m-0" style="font-size: 14px; color: var(--on-surface);">Scan Logs</h2>
               <span class="mono text-secondary" style="font-size: 10px;">SEARCH, FILTER, AND REVIEW SITE ACTIVITY</span>
             </div>
-            <form class="d-flex flex-wrap gap-2" method="get">
+            <form class="d-flex flex-wrap gap-2" method="get" action="#scan-logs-section">
               <input name="q" value="{{ query }}" class="form-control mono" placeholder="Scan logs..." style="width: 220px; background: var(--surface-container-lowest); border-color: var(--outline-variant); color: var(--on-surface);">
               <select name="verdict" class="form-select mono" style="width: 160px; background: var(--surface-container-lowest); border-color: var(--outline-variant); color: var(--on-surface);">
                 <option value="all" {% if verdict == 'all' %}selected{% endif %}>All verdicts</option>
@@ -139,7 +144,7 @@
             <div class="col-lg-8">
               <div class="table-responsive">
                 <table class="table custom-table align-middle">
-                  <thead><tr><th>URL</th><th>User</th><th>Verdict</th><th>Confidence</th><th>IP</th><th>Location</th><th>Time</th></tr></thead>
+                  <thead><tr><th>URL</th><th>User</th><th>Verdict</th><th>Confidence</th><th>IP</th><th>Location</th><th>Time</th><th style="width: 60px;">Action</th></tr></thead>
                   <tbody>
                   {% for log in logs %}
                     <tr>
@@ -150,9 +155,17 @@
                       <td>{{ log.ip_address }}</td>
                       <td>{{ log.location }}</td>
                       <td>{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <form method="post" action="{% url 'delete_scan_log' log.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to permanently delete this scan log? This action cannot be undone.');">
+                          {% csrf_token %}
+                          <button class="btn btn-link text-danger p-0 border-0 align-middle" type="submit" title="Delete scan log" style="box-shadow: none; line-height: 1;">
+                            <span class="material-symbols-outlined fs-5">delete</span>
+                          </button>
+                        </form>
+                      </td>
                     </tr>
                   {% empty %}
-                    <tr><td colspan="7" class="text-center text-secondary mono py-4">No logs found.</td></tr>
+                    <tr><td colspan="8" class="text-center text-secondary mono py-4">No logs found.</td></tr>
                   {% endfor %}
                   </tbody>
                 </table>

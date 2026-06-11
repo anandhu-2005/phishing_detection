@@ -6,6 +6,7 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-dashboard/login/', views.admin_dashboard_login, name='admin_dashboard_login'),
     path('admin-dashboard/logout/', views.admin_dashboard_logout, name='admin_dashboard_logout'),
+    path('admin-dashboard/delete-log/<int:log_id>/', views.delete_scan_log, name='delete_scan_log'),
     path('login/', views.user_login, name='user_login'),
     path('logout/', views.user_logout, name='user_logout'),
     path('signup/', views.user_signup, name='user_signup'),

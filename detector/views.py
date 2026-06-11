@@ -146,9 +146,37 @@ def admin_dashboard_logout(request):
     logout(request)
     return redirect('admin_dashboard_login')
 
+@user_passes_test(lambda user: user.is_staff, login_url='admin_dashboard_login')
+def delete_scan_log(request, log_id):
+    if request.method == 'POST':
+        try:
+            log = ScanLog.objects.get(id=log_id)
+            log.delete()
+            messages.success(request, 'Scan log successfully deleted.')
+        except ScanLog.DoesNotExist:
+            messages.error(request, 'Scan log not found.')
+    
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        # Check if referer already has an anchor; if not, we can append #scan-logs-section to it
+        if '#scan-logs-section' not in referer:
+            if '?' in referer:
+                # If there are query parameters but no anchor, append the anchor
+                # Note: URL parsing or simple concatenation:
+                if '#' in referer:
+                    referer = referer.split('#')[0] + '#scan-logs-section'
+                else:
+                    referer = referer + '#scan-logs-section'
+            else:
+                referer = referer + '#scan-logs-section'
+        return redirect(referer)
+    return redirect('admin_dashboard')
+
 
 def user_login(request):
     if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('admin_dashboard')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -164,6 +192,8 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            if user.is_staff:
+                return redirect('admin_dashboard')
             return redirect('dashboard')
 
         messages.error(request, 'Invalid email or password.')
