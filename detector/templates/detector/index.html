@@ -2132,6 +2132,15 @@
       return cookieValue;
     }
 
+    function setReportFalsePositiveButtonLabel(isPhishing) {
+      if (!reportFalsePositive) return;
+      reportFalsePositive.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size:14px;">thumb_down</span>
+        ${isPhishing ? 'FALSE NEGATIVE' : 'FALSE POSITIVE'}
+      `;
+      reportFalsePositive.title = isPhishing ? 'Mark as missed phishing threat' : 'Mark as incorrectly flagged as phishing';
+    }
+
     // ── DIAGNOSTIC CHECKLIST VISUAL FEEDBACK helpers ───────────────────────────
     function updateDiagnosticChecklist(progress) {
       const updateStage = (stageNum, state) => {
@@ -2372,6 +2381,8 @@
       const features = data.features;
       const isPhishing = data.verdict === 'PHISHING';
       const confidence = data.confidence;
+
+      setReportFalsePositiveButtonLabel(isPhishing);
 
       // Store for copy/export
       lastScanData = {
