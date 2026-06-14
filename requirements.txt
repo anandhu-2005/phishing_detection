@@ -86,7 +86,6 @@ psutil==7.0.0
 pure_eval==0.2.3
 py-cpuinfo==9.0.0
 pycparser==2.22
-pygame==2.6.1
 Pygments==2.19.1
 PyMuPDF==1.25.3
 pyparsing==3.2.3
