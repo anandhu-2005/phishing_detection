@@ -23,11 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0n29n&zz#1+4cgd(ytof2z$1em$uj-)20^auz&^1_s!1c)h#x0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 
+ALLOWED_HOSTS = [
+    'https://phishing-detection-1-acvi.onrender.com',  # Replace with your actual Render URL
+    'localhost',
+    '127.0.0.1',
+]
+DEBUG = False  # in production
 # Application definition
 
 INSTALLED_APPS = [
@@ -116,3 +119,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
