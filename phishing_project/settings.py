@@ -26,9 +26,9 @@ SECRET_KEY = 'django-insecure-0n29n&zz#1+4cgd(ytof2z$1em$uj-)20^auz&^1_s!1c)h#x0
 
 
 ALLOWED_HOSTS = [
-    'https://phishing-detection-1-acvi.onrender.com',  # Replace with your actual Render URL
+    'phishing-detection-2-mr6h.onrender.com',
     'localhost',
-    '127.0.0.1',
+    '127.0.0.1'
 ]
 DEBUG = False  # in production
 # Application definition
